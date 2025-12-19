@@ -1,116 +1,98 @@
-const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:3001/api';
+import { MOCK_PROBLEMS, MOCK_USER, Problem, UserProgress } from '../mockData';
 
-class ApiService {
-  private getHeaders(): HeadersInit {
-    const headers: HeadersInit = {
-      'Content-Type': 'application/json',
-    };
-    
-    const token = localStorage.getItem('authToken');
-    if (token) {
-      headers['Authorization'] =`Bearer \${token}\`;
-    }
-    
-    return headers;
+const STORAGE_KEYS = {
+  USER: 'brilliant_clone_user',
+  PROBLEMS: 'brilliant_clone_problems'
+};
+
+// Helper to initialize storage if empty
+const initStorage = () => {
+  if (!localStorage.getItem(STORAGE_KEYS.USER)) {
+    localStorage.setItem(STORAGE_KEYS.USER, JSON.stringify(MOCK_USER));
   }
+};
 
-  private async request<T>(
-    endpoint: string, 
-    options: RequestInit = {}
-  ): Promise<T> {
-    const url = \`\${API_BASE_URL}\${endpoint}\`;
-    const config: RequestInit = {
-      ...options,
-      headers: {
-        ...this.getHeaders(),
-        ...options.headers,
-      },
-    };
+const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 
+// Date helpers
+const getToday = () => new Date().toISOString().split('T')[0];
+const getYesterday = () => {
+  const date = new Date();
+  date.setDate(date.getDate() - 1);
+  return date.toISOString().split('T')[0];
+};
+
+export const apiService = {
+  getProblem: async (id: string): Promise<Problem> => {
+    await delay(500);
+    const problem = MOCK_PROBLEMS.find(p => p.id === id);
+    if (!problem) throw new Error('Problem not found');
+    return problem;
+  },
+
+  getAllProblems: async (): Promise<Problem[]> => {
+    await delay(500);
+    return MOCK_PROBLEMS;
+  },
+
+  getUserProgress: async (userId: string): Promise<UserProgress> => {
+    await delay(400);
+    initStorage();
     try {
-      const response = await fetch(url, config);
-      
-      if (!response.ok) {
-        const error = await response.json().catch(() => ({ message: 'Unknown error' }));
-        throw new Error(error.message || \`HTTP error! status: \${response.status}\`);
-      }
-      
-      return response.json();
-    } catch (error) {
-      console.error('API request failed:', error);
-      throw error;
+      const data = localStorage.getItem(STORAGE_KEYS.USER);
+      return data ? JSON.parse(data) : MOCK_USER;
+    } catch (e) {
+      console.error('Failed to parse user progress', e);
+      return MOCK_USER;
     }
-  }
+  },
 
-  // Auth endpoints
-  async login(email: string, password: string) {
-    return this.request('/auth/login', {
-      method: 'POST',
-      body: JSON.stringify({ email, password }),
-    });
-  }
+  updateProgress: async (userId: string, updates: Partial<UserProgress>): Promise<UserProgress> => {
+    await delay(300);
+    initStorage();
+    
+    const currentDataStr = localStorage.getItem(STORAGE_KEYS.USER);
+    const currentData: UserProgress = currentDataStr ? JSON.parse(currentDataStr) : MOCK_USER;
 
-  async register(email: string, username: string, password: string) {
-    return this.request('/auth/register', {
-      method: 'POST',
-      body: JSON.stringify({ email, username, password }),
-    });
-  }
+    // --- Streak Logic ---
+    const today = getToday();
+    const yesterday = getYesterday();
+    const lastActive = currentData.lastActiveDate;
+    
+    let newStreak = currentData.currentStreak;
 
-  async getCurrentUser() {
-    return this.request('/auth/me');
-  }
+    // Only update streak if we haven't already been active today
+    if (lastActive !== today) {
+      if (lastActive === yesterday) {
+        // Continue streak
+        newStreak += 1;
+      } else {
+        // Break streak (missed more than 1 day) or first day
+        newStreak = 1;
+      }
+    }
+    
+    const newLongestStreak = Math.max(newStreak, currentData.longestStreak);
 
-  // Problem endpoints
-  async getProblems(params?: { category?: string; difficulty?: string; page?: number }) {
-    const query = new URLSearchParams(params as any).toString();
-    return this.request(\`/problems?\${query}\`);
-  }
+    // --- XP & Level Logic ---
+    const newTotalXP = (currentData.totalXP || 0) + (updates.totalXP || 0);
+    const newProblemsSolved = (currentData.problemsSolved || 0) + (updates.problemsSolved || 0);
+    
+    // Merge updates
+    const updatedUser: UserProgress = {
+      ...currentData,
+      ...updates,
+      totalXP: newTotalXP,
+      problemsSolved: newProblemsSolved,
+      level: Math.floor(newTotalXP / 1000) + 1,
+      currentStreak: newStreak,
+      longestStreak: newLongestStreak,
+      lastActiveDate: today
+    };
 
-  async getProblem(id: string) {
-    return this.request(\`/problems/\${id}\`);
+    localStorage.setItem(STORAGE_KEYS.USER, JSON.stringify(updatedUser));
+    console.log(`[Mock API] Persisted progress for ${userId}:`, updatedUser);
+    
+    return updatedUser;
   }
-
-  async validateAnswer(problemId: string, answer: any) {
-    return this.request(\`/problems/\${problemId}/validate\`, {
-      method: 'POST',
-      body: JSON.stringify({ answer }),
-    });
-  }
-
-  // Progress endpoints
-  async getProgress(userId: string) {
-    return this.request(\`/progress/\${userId}\`);
-  }
-
-  async updateProgress(userId: string, updates: any) {
-    return this.request(\`/progress/\${userId}\`, {
-      method: 'PATCH',
-      body: JSON.stringify(updates),
-    });
-  }
-
-  async completeProblem(userId: string, problemId: string, data: any) {
-    return this.request(\`/progress/\${userId}/complete\`, {
-      method: 'POST',
-      body: JSON.stringify({ problemId, ...data }),
-    });
-  }
-
-  // Course endpoints
-  async getCourses() {
-    return this.request('/courses');
-  }
-
-  async getCourse(id: string) {
-    return this.request(\`/courses/\${id}\`);
-  }
-
-  async enrollCourse(courseId: string) {
-    return this.request(\`/courses/\${courseId}/enroll\`, {
-      method: 'POST',
-    });
-  }
-}
-
-export const apiService = new ApiService();
+};

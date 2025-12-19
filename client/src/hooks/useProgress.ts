@@ -1,5 +1,7 @@
 import { useState, useEffect } from 'react';
+import { apiService } from '../services/api.service';
 
+// Sync this interface with the one in mockData/apiService to avoid confusion
 interface UserProgress {
   totalXP: number;
   level: number;
@@ -7,23 +9,18 @@ interface UserProgress {
   longestStreak: number;
   problemsSolved: number;
   timeSpent: number;
+  lastActiveDate: string;
 }
 
-export const useProgress = (userId: string) => {
+export const useProgress = (userId: string = 'user-123') => {
   const [progress, setProgress] = useState<UserProgress | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    fetchProgress();
-  }, [userId]);
-
   const fetchProgress = async () => {
     try {
       setLoading(true);
-      const response = await fetch(\`/api/progress/\${userId}\`);
-      if (!response.ok) throw new Error('Failed to fetch progress');
-      const data = await response.json();
+      const data = await apiService.getUserProgress(userId);
       setProgress(data);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Unknown error');
@@ -32,43 +29,22 @@ export const useProgress = (userId: string) => {
     }
   };
 
+  useEffect(() => {
+    fetchProgress();
+  }, [userId]);
+
   const updateProgress = async (updates: Partial<UserProgress>) => {
     if (!progress) return;
     
-    const newProgress = { ...progress, ...updates };
-    setProgress(newProgress);
-    
+    // Optimistic update (simple merge, though api service has the real logic)
+    // We rely on the API response to get the calculated streak/level back
     try {
-      await fetch(\`/api/progress/\${userId}\`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(updates)
-      });
+      const updatedData = await apiService.updateProgress(userId, updates);
+      setProgress(updatedData);
     } catch (err) {
-      console.error('Failed to update progress:', err);
-      setProgress(progress); // Revert on error
+      console.error('Failed to update progress', err);
     }
   };
 
-  const addXP = (xp: number) => {
-    if (!progress) return;
-    const newTotalXP = progress.totalXP + xp;
-    const newLevel = Math.floor(newTotalXP / 1000) + 1;
-    updateProgress({ totalXP: newTotalXP, level: newLevel });
-  };
-
-  const incrementProblemsSolved = () => {
-    if (!progress) return;
-    updateProgress({ problemsSolved: progress.problemsSolved + 1 });
-  };
-
-  return {
-    progress,
-    loading,
-    error,
-    addXP,
-    incrementProblemsSolved,
-    updateProgress,
-    refresh: fetchProgress
-  };
+  return { progress, loading, error, updateProgress };
 };

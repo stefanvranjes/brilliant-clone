@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { apiService } from '../services/api.service';
 
 interface Problem {
   id: string;
@@ -6,26 +7,23 @@ interface Problem {
   description: string;
   difficulty: string;
   type: string;
-  hints: any[];
-  solution: any;
+  category: string;
+  hints: string[];
+  options?: string[];
+  solution?: any;
   xpReward: number;
 }
 
-export const useProblem = (problemId: string) => {
+export const useProblem = (problemId?: string) => {
   const [problem, setProblem] = useState<Problem | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    fetchProblem();
-  }, [problemId]);
-
-  const fetchProblem = async () => {
+  const fetchProblem = async (id: string) => {
     try {
       setLoading(true);
-      const response = await fetch(\`/api/problems/\${problemId}\`);
-      if (!response.ok) throw new Error('Failed to fetch problem');
-      const data = await response.json();
+      setError(null);
+      const data = await apiService.getProblem(id);
       setProblem(data);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Unknown error');
@@ -34,35 +32,22 @@ export const useProblem = (problemId: string) => {
     }
   };
 
-  return { problem, loading, error, refresh: fetchProblem };
+  useEffect(() => {
+    if (problemId) {
+      fetchProblem(problemId);
+    }
+  }, [problemId]);
+
+  return { problem, loading, error, refresh: () => problemId && fetchProblem(problemId) };
 };
 
-export const useProblems = (filters?: { category?: string; difficulty?: string }) => {
+export const useProblems = () => {
   const [problems, setProblems] = useState<Problem[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
+  
   useEffect(() => {
-    fetchProblems();
-  }, [filters]);
+    apiService.getAllProblems().then(setProblems).finally(() => setLoading(false));
+  }, []);
 
-  const fetchProblems = async () => {
-    try {
-      setLoading(true);
-      const params = new URLSearchParams();
-      if (filters?.category) params.append('category', filters.category);
-      if (filters?.difficulty) params.append('difficulty', filters.difficulty);
-      
-      const response = await fetch(\`/api/problems?\${params}\`);
-      if (!response.ok) throw new Error('Failed to fetch problems');
-      const data = await response.json();
-      setProblems(data);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Unknown error');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  return { problems, loading, error, refresh: fetchProblems };
+  return { problems, loading };
 };
