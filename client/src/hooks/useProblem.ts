@@ -1,18 +1,7 @@
 import { useState, useEffect } from 'react';
 import { apiService } from '../services/api.service';
 
-interface Problem {
-  id: string;
-  title: string;
-  description: string;
-  difficulty: string;
-  type: string;
-  category: string;
-  hints: string[];
-  options?: string[];
-  solution?: any;
-  xpReward: number;
-}
+import { Problem } from '../mockData';
 
 export const useProblem = (problemId?: string) => {
   const [problem, setProblem] = useState<Problem | null>(null);
@@ -44,7 +33,7 @@ export const useProblem = (problemId?: string) => {
 export const useProblems = () => {
   const [problems, setProblems] = useState<Problem[]>([]);
   const [loading, setLoading] = useState(true);
-  
+
   useEffect(() => {
     apiService.getAllProblems().then(setProblems).finally(() => setLoading(false));
   }, []);

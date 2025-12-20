@@ -7,6 +7,15 @@ import { Button } from '../../components/ui/Button';
 import { Modal } from '../../components/ui/Modal';
 import { LoadingSpinner } from '../../components/ui/LoadingSpinner';
 import { PageTransition } from '../../components/ui/PageTransition';
+import { BinaryExplorer } from '../visualization/BinaryExplorer';
+import { AlgebraBalance } from '../visualization/AlgebraBalance';
+import { LogicScenarioTester } from '../visualization/LogicScenarioTester';
+
+const VISUALIZATIONS: Record<string, React.ReactNode> = {
+  'binary-explorer': <BinaryExplorer />,
+  'algebra-balance': <AlgebraBalance />,
+  'logic-scenario': <LogicScenarioTester />
+};
 
 const InteractiveProblem = () => {
   const { problemId } = useParams<{ problemId: string }>();
@@ -23,7 +32,7 @@ const InteractiveProblem = () => {
 
   const handleSubmit = () => {
     if (!problem) return;
-    
+
     let userAnswer = '';
     let correct = false;
 
@@ -36,14 +45,15 @@ const InteractiveProblem = () => {
       userAnswer = textInput.trim();
       correct = userAnswer.toLowerCase() === String(problem.correctAnswer).toLowerCase();
     }
-    
+
     setIsCorrect(correct);
     setIsSubmitted(true);
 
     if (correct) {
       updateProgress({
-        totalXP: (problem.xpReward || 0), 
-        problemsSolved: 1 
+        totalXP: (problem.xpReward || 0),
+        problemsSolved: 1,
+        dailyChallengeCompleted: problem.isDaily || false
       });
       setShowModal(true);
     }
@@ -59,9 +69,9 @@ const InteractiveProblem = () => {
   if (loading) return <LoadingSpinner />;
   if (error || !problem) return <div className="text-center p-10 text-red-600">Problem not found</div>;
 
-  const isSubmitDisabled = 
+  const isSubmitDisabled =
     (problem.type === 'multiple-choice' && !selectedOption) ||
-    (problem.type === 'fill-in-the-blank' && !textInput.trim()) || 
+    (problem.type === 'fill-in-the-blank' && !textInput.trim()) ||
     isSubmitted;
 
   return (
@@ -82,27 +92,37 @@ const InteractiveProblem = () => {
         </div>
       </div>
 
+      {/* VISUALIZATION AREA */}
+      {problem.visualizationId && VISUALIZATIONS[problem.visualizationId] && (
+        <motion.div
+          initial={{ opacity: 0, scale: 0.95 }}
+          animate={{ opacity: 1, scale: 1 }}
+          className="mb-8"
+        >
+          {VISUALIZATIONS[problem.visualizationId]}
+        </motion.div>
+      )}
+
       {/* Interaction Area */}
       <div className="bg-white p-8 rounded-2xl border border-gray-200 shadow-sm mb-8">
-        
+
         {/* MULTIPLE CHOICE */}
         {problem.type === 'multiple-choice' && problem.options && (
           <div className="space-y-3">
-            {problem.options.map((option) => (
-              <motion.div 
+            {problem.options.map((option: string) => (
+              <motion.div
                 key={option}
                 whileHover={!isSubmitted ? { scale: 1.01 } : {}}
                 whileTap={!isSubmitted ? { scale: 0.99 } : {}}
                 onClick={() => !isSubmitted && setSelectedOption(option)}
-                className={`p-4 rounded-xl border-2 cursor-pointer transition-colors flex items-center justify-between ${
-                  isSubmitted && option === problem.correctAnswer
-                    ? 'bg-green-50 border-green-500 text-green-900'
-                    : isSubmitted && option === selectedOption && option !== problem.correctAnswer
+                className={`p-4 rounded-xl border-2 cursor-pointer transition-colors flex items-center justify-between ${isSubmitted && option === problem.correctAnswer
+                  ? 'bg-green-50 border-green-500 text-green-900'
+                  : isSubmitted && option === selectedOption && option !== problem.correctAnswer
                     ? 'bg-red-50 border-red-500 text-red-900'
                     : selectedOption === option
-                    ? 'bg-blue-50 border-blue-500 text-blue-900 ring-2 ring-blue-200'
-                    : 'bg-white border-gray-200 hover:border-gray-300 hover:bg-gray-50'
-                }`}
+                      ? 'bg-blue-50 border-blue-500 text-blue-900 ring-2 ring-blue-200'
+                      : 'bg-white border-gray-200 hover:border-gray-300 hover:bg-gray-50'
+                  }`}
               >
                 <span className="font-medium text-lg">{option}</span>
                 {isSubmitted && option === problem.correctAnswer && (
@@ -119,36 +139,35 @@ const InteractiveProblem = () => {
         {/* FILL IN THE BLANK */}
         {problem.type === 'fill-in-the-blank' && (
           <div className="max-w-md mx-auto">
-             <label className="block text-sm font-bold text-gray-700 mb-2">
-               Your Answer
-             </label>
-             <div className="relative">
-               <input 
-                 type="text" 
-                 value={textInput}
-                 onChange={(e) => !isSubmitted && setTextInput(e.target.value)}
-                 disabled={isSubmitted}
-                 placeholder="Type your answer here..."
-                 className={`w-full p-4 text-lg border-2 rounded-xl outline-none transition-all ${
-                   isSubmitted 
-                     ? (isCorrect ? 'border-green-500 bg-green-50 text-green-900' : 'border-red-500 bg-red-50 text-red-900')
-                     : 'border-gray-300 focus:border-black focus:ring-4 focus:ring-gray-100'
-                 }`}
-               />
-               {isSubmitted && (
-                 <motion.div 
-                   initial={{ opacity: 0, y: 10 }}
-                   animate={{ opacity: 1, y: 0 }}
-                   className={`mt-3 font-bold flex items-center gap-2 ${isCorrect ? 'text-green-600' : 'text-red-600'}`}
-                 >
-                   {isCorrect ? (
-                     <><span>✓</span> Correct!</>
-                   ) : (
-                     <><span>✕</span> Incorrect. The answer is {problem.correctAnswer}</>
-                   )}
-                 </motion.div>
-               )}
-             </div>
+            <label className="block text-sm font-bold text-gray-700 mb-2">
+              Your Answer
+            </label>
+            <div className="relative">
+              <input
+                type="text"
+                value={textInput}
+                onChange={(e) => !isSubmitted && setTextInput(e.target.value)}
+                disabled={isSubmitted}
+                placeholder="Type your answer here..."
+                className={`w-full p-4 text-lg border-2 rounded-xl outline-none transition-all ${isSubmitted
+                  ? (isCorrect ? 'border-green-500 bg-green-50 text-green-900' : 'border-red-500 bg-red-50 text-red-900')
+                  : 'border-gray-300 focus:border-black focus:ring-4 focus:ring-gray-100'
+                  }`}
+              />
+              {isSubmitted && (
+                <motion.div
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className={`mt-3 font-bold flex items-center gap-2 ${isCorrect ? 'text-green-600' : 'text-red-600'}`}
+                >
+                  {isCorrect ? (
+                    <><span>✓</span> Correct!</>
+                  ) : (
+                    <><span>✕</span> Incorrect. The answer is {problem.correctAnswer}</>
+                  )}
+                </motion.div>
+              )}
+            </div>
           </div>
         )}
 
@@ -162,23 +181,23 @@ const InteractiveProblem = () => {
 
       {/* Footer / Actions */}
       <div className="flex justify-between items-center">
-         <Button variant="ghost" onClick={() => navigate('/')}>
-           Back to Path
-         </Button>
-         <Button 
-           size="lg" 
-           onClick={isSubmitted && !isCorrect ? handleRetry : handleSubmit} 
-           disabled={!isSubmitted && isSubmitDisabled}
-           variant={isSubmitted ? (isCorrect ? 'primary' : 'secondary') : 'primary'}
-         >
-           {isSubmitted ? (isCorrect ? 'Correct!' : 'Try Again') : 'Submit Answer'}
-         </Button>
+        <Button variant="ghost" onClick={() => navigate('/')}>
+          Back to Path
+        </Button>
+        <Button
+          size="lg"
+          onClick={isSubmitted && !isCorrect ? handleRetry : handleSubmit}
+          disabled={!isSubmitted && isSubmitDisabled}
+          variant={isSubmitted ? (isCorrect ? 'primary' : 'secondary') : 'primary'}
+        >
+          {isSubmitted ? (isCorrect ? 'Correct!' : 'Try Again') : 'Submit Answer'}
+        </Button>
       </div>
 
       {/* Success Modal */}
       <Modal isOpen={showModal} onClose={() => setShowModal(false)}>
         <div className="text-center py-6">
-          <motion.div 
+          <motion.div
             initial={{ scale: 0, rotate: -180 }}
             animate={{ scale: 1, rotate: 0 }}
             transition={{ type: "spring", stiffness: 260, damping: 20 }}

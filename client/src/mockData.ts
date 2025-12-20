@@ -9,6 +9,28 @@ export interface Problem {
   options?: string[]; // For multiple choice
   correctAnswer?: string | number;
   xpReward: number;
+  moduleId?: string;
+  visualizationId?: string;
+  isDaily?: boolean;
+}
+
+export interface Module {
+  id: string;
+  title: string;
+  description: string;
+  category: string;
+  icon: string;
+  problemIds: string[];
+  totalXP: number;
+}
+
+export interface Achievement {
+  id: string;
+  title: string;
+  description: string;
+  icon: string;
+  type: 'xp' | 'streak' | 'problems' | 'daily';
+  threshold: number;
 }
 
 export interface UserProgress {
@@ -20,6 +42,8 @@ export interface UserProgress {
   problemsSolved: number;
   timeSpent: number; // in minutes
   lastActiveDate: string; // YYYY-MM-DD
+  dailyChallengeCompleted: boolean;
+  unlockedAchievementIds: string[];
   history: {
     problemId: string;
     completedAt: string;
@@ -41,7 +65,9 @@ export const MOCK_PROBLEMS: Problem[] = [
     ],
     options: ['Door 1', 'Door 2', 'Door 3'],
     correctAnswer: 'Door 3',
-    xpReward: 150
+    xpReward: 150,
+    moduleId: 'logic-modeling',
+    visualizationId: 'logic-scenario'
   },
   {
     id: 'math-1',
@@ -56,7 +82,9 @@ export const MOCK_PROBLEMS: Problem[] = [
     ],
     options: ['40', '42', '44', '46'],
     correctAnswer: '42',
-    xpReward: 100
+    xpReward: 100,
+    moduleId: 'math-fundamentals',
+    isDaily: true
   },
   {
     id: 'cs-1',
@@ -71,7 +99,9 @@ export const MOCK_PROBLEMS: Problem[] = [
     ],
     options: ['9', '10', '11', '13'],
     correctAnswer: '11',
-    xpReward: 100
+    xpReward: 100,
+    moduleId: 'cs-foundations',
+    visualizationId: 'binary-explorer'
   },
   {
     id: 'math-2',
@@ -85,7 +115,74 @@ export const MOCK_PROBLEMS: Problem[] = [
       'Then divide by 2.'
     ],
     correctAnswer: '5',
-    xpReward: 75
+    xpReward: 75,
+    moduleId: 'math-fundamentals',
+    visualizationId: 'algebra-balance'
+  }
+];
+
+export const MOCK_MODULES: Module[] = [
+  {
+    id: 'math-fundamentals',
+    title: 'Mathematical Fundamentals',
+    description: 'Master the core concepts of algebra and numerical patterns.',
+    category: 'Mathematics',
+    icon: '🧮',
+    problemIds: ['math-1', 'math-2'],
+    totalXP: 175
+  },
+  {
+    id: 'logic-modeling',
+    title: 'Logic & Deduction',
+    description: 'Sharpen your mind with classical logic puzzles and modeling.',
+    category: 'Logic',
+    icon: '🕵️',
+    problemIds: ['logic-1'],
+    totalXP: 150
+  },
+  {
+    id: 'cs-foundations',
+    title: 'Computer Science Essentials',
+    description: 'Explore the foundations of bits, bytes, and computational thinking.',
+    category: 'Computer Science',
+    icon: '💻',
+    problemIds: ['cs-1'],
+    totalXP: 100
+  }
+];
+
+export const MOCK_ACHIEVEMENTS: Achievement[] = [
+  {
+    id: 'first-step',
+    title: 'First Step',
+    description: 'Solve your first problem',
+    icon: '🚀',
+    type: 'problems',
+    threshold: 1
+  },
+  {
+    id: 'streak-3',
+    title: 'Momentum',
+    description: 'Maintain a 3-day streak',
+    icon: '🔥',
+    type: 'streak',
+    threshold: 3
+  },
+  {
+    id: 'xp-1000',
+    title: 'Knowledgeable',
+    description: 'Earn 1000 total XP',
+    icon: '📚',
+    type: 'xp',
+    threshold: 1000
+  },
+  {
+    id: 'daily-master',
+    title: 'Daily Dedication',
+    description: 'Complete a Daily Challenge',
+    icon: '🌟',
+    type: 'daily',
+    threshold: 1
   }
 ];
 
@@ -98,7 +195,9 @@ export const MOCK_USER: UserProgress = {
   longestStreak: 7,
   problemsSolved: 12,
   timeSpent: 120,
-  lastActiveDate: '2023-10-25', // Arbitrary past date
+  lastActiveDate: '2023-10-25',
+  dailyChallengeCompleted: false,
+  unlockedAchievementIds: ['first-step'],
   history: [
     { problemId: 'logic-0', completedAt: '2023-10-01', xpEarned: 100 }
   ]

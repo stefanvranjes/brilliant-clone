@@ -3,88 +3,80 @@ import { BrowserRouter as Router, Routes, Route, Link, useLocation } from 'react
 import { AnimatePresence } from 'framer-motion';
 import ProgressDashboard from './features/dashboard/ProgressDashboard';
 import InteractiveProblem from './features/problem-solving/InteractiveProblem';
-import { useProblems } from './hooks/useProblem';
+import ModuleDetail from './features/modules/ModuleDetail';
+import { useModules } from './hooks/useModules';
+import { ModuleCard } from './components/ui/ModuleCard';
 import { PageTransition } from './components/ui/PageTransition';
+import { DailyChallengeCard } from './components/ui/DailyChallengeCard';
+import { useDailyChallenge } from './hooks/useDailyChallenge';
+import { useProgress } from './hooks/useProgress';
 
-// Simple Landing/Home Component to list problems
+// Simple Landing/Home Component to list modules
 const Home = () => {
-  const { problems, loading } = useProblems();
+  const { modules, loading: modulesLoading, error: modulesError } = useModules();
+  const { challenge, isCompleted, loading: challengeLoading } = useDailyChallenge();
+  const { progress } = useProgress();
   const [selectedCategory, setSelectedCategory] = useState('All');
 
   const categories = useMemo(() => {
-    const uniqueCats = Array.from(new Set(problems.map(p => p.category)));
+    const uniqueCats = Array.from(new Set(modules.map((m: any) => m.category)));
     return ['All', ...uniqueCats.sort()];
-  }, [problems]);
+  }, [modules]);
 
-  const filteredProblems = useMemo(() => {
-    if (selectedCategory === 'All') return problems;
-    return problems.filter(p => p.category === selectedCategory);
-  }, [problems, selectedCategory]);
+  const filteredModules = useMemo(() => {
+    if (selectedCategory === 'All') return modules;
+    return modules.filter((m: any) => m.category === selectedCategory);
+  }, [modules, selectedCategory]);
 
-  if (loading) return <div className="p-8 text-center">Loading Content...</div>;
+  if (modulesLoading || challengeLoading) return <div className="p-8 text-center text-gray-500 font-medium">Loading...</div>;
+  if (modulesError) return <div className="p-8 text-center text-red-500 font-medium">{modulesError}</div>;
 
   return (
-    <PageTransition className="max-w-4xl mx-auto p-6">
-      <div className="flex justify-between items-center mb-8">
-        <h1 className="text-3xl font-bold text-gray-900">Learning Path</h1>
-        <Link to="/dashboard" className="text-blue-600 font-semibold hover:underline">
-          View Dashboard
+    <PageTransition className="max-w-6xl mx-auto p-6">
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-end mb-12 gap-4">
+        <div>
+          <h1 className="text-5xl font-black text-gray-900 mb-4 tracking-tight">Level up your mind</h1>
+          <p className="text-xl text-gray-600 max-w-xl leading-relaxed">
+            Master complex concepts through interactive, bite-sized lessons in math, logic, and computer science.
+          </p>
+        </div>
+        <Link to="/dashboard" className="text-sm font-bold text-blue-600 bg-blue-50 px-6 py-3 rounded-xl hover:bg-blue-100 transition-colors">
+          View My Progress
         </Link>
       </div>
 
-      <div className="flex gap-2 mb-8 overflow-x-auto pb-2 scrollbar-hide">
-        {categories.map((cat) => (
+      <DailyChallengeCard
+        challenge={challenge}
+        isCompleted={isCompleted}
+        streak={progress?.currentStreak || 0}
+      />
+
+      <div className="flex gap-3 mb-12 overflow-x-auto pb-4 scrollbar-hide -mx-2 px-2">
+        {categories.map((cat: string) => (
           <button
             key={cat}
             onClick={() => setSelectedCategory(cat)}
-            className={`px-4 py-2 rounded-full text-sm font-bold transition-all whitespace-nowrap border ${
-              selectedCategory === cat
-                ? 'bg-black text-white border-black shadow-md'
-                : 'bg-white text-gray-600 border-gray-200 hover:bg-gray-50 hover:border-gray-300'
-            }`}
+            className={`px-6 py-2.5 rounded-full text-sm font-bold transition-all whitespace-nowrap border-2 ${selectedCategory === cat
+              ? 'bg-black text-white border-black shadow-lg shadow-black/10'
+              : 'bg-white text-gray-600 border-gray-100 hover:bg-gray-50 hover:border-gray-200'
+              }`}
           >
             {cat}
           </button>
         ))}
       </div>
 
-      <div className="grid gap-4">
-        {filteredProblems.length > 0 ? (
-          filteredProblems.map((prob) => (
-            <Link 
-              key={prob.id} 
-              to={`/problem/${prob.id}`}
-              className="block p-6 bg-white rounded-xl shadow-sm border border-gray-200 hover:border-blue-500 hover:shadow-md transition-all"
-            >
-              <div className="flex justify-between items-start">
-                <div>
-                  <div className="flex items-center gap-2 mb-2">
-                    <span className={`text-xs font-bold px-2 py-1 rounded-full ${
-                      prob.difficulty === 'Easy' ? 'bg-green-100 text-green-700' :
-                      prob.difficulty === 'Medium' ? 'bg-yellow-100 text-yellow-700' :
-                      'bg-red-100 text-red-700'
-                    }`}>
-                      {prob.difficulty}
-                    </span>
-                    <span className="text-xs font-semibold text-gray-500 uppercase tracking-wider">
-                      {prob.category}
-                    </span>
-                  </div>
-                  <h3 className="text-xl font-bold text-gray-900">{prob.title}</h3>
-                  <p className="mt-1 text-gray-600">{prob.description.substring(0, 100)}...</p>
-                </div>
-                <div className="text-right">
-                  <span className="block text-sm font-bold text-blue-600">+{prob.xpReward} XP</span>
-                </div>
-              </div>
-            </Link>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+        {filteredModules.length > 0 ? (
+          filteredModules.map((module) => (
+            <ModuleCard key={module.id} module={module} />
           ))
         ) : (
-          <div className="text-center py-12 bg-gray-50 rounded-xl border border-dashed border-gray-300">
-            <p className="text-gray-500 font-medium">No problems found in this category.</p>
-            <button 
+          <div className="col-span-full text-center py-20 bg-gray-50 rounded-3xl border-2 border-dashed border-gray-200">
+            <p className="text-gray-500 font-bold text-lg">No courses found in this category.</p>
+            <button
               onClick={() => setSelectedCategory('All')}
-              className="mt-2 text-blue-600 hover:underline font-semibold"
+              className="mt-4 text-blue-600 font-black hover:underline"
             >
               Clear filters
             </button>
@@ -104,8 +96,8 @@ const Layout = ({ children }: { children: React.ReactNode }) => (
           <span>BrilliantClone</span>
         </Link>
         <div className="flex gap-4">
-           <Link to="/" className="text-sm font-medium text-gray-600 hover:text-black">Explore</Link>
-           <Link to="/dashboard" className="text-sm font-medium text-gray-600 hover:text-black">My Progress</Link>
+          <Link to="/" className="text-sm font-medium text-gray-600 hover:text-black">Explore</Link>
+          <Link to="/dashboard" className="text-sm font-medium text-gray-600 hover:text-black">My Progress</Link>
         </div>
       </div>
     </nav>
@@ -117,12 +109,13 @@ const Layout = ({ children }: { children: React.ReactNode }) => (
 
 const AnimatedRoutes = () => {
   const location = useLocation();
-  
+
   return (
     <AnimatePresence mode="wait">
       <Routes location={location} key={location.pathname}>
         <Route path="/" element={<Home />} />
         <Route path="/dashboard" element={<ProgressDashboard />} />
+        <Route path="/module/:moduleId" element={<ModuleDetail />} />
         <Route path="/problem/:problemId" element={<InteractiveProblem />} />
       </Routes>
     </AnimatePresence>

@@ -1,3 +1,5 @@
+import { Problem } from '../mockData';
+
 export interface ProblemState {
   currentProblem: Problem | null;
   userAnswer: string | number | string[] | null;

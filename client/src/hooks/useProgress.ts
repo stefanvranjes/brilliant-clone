@@ -10,6 +10,8 @@ interface UserProgress {
   problemsSolved: number;
   timeSpent: number;
   lastActiveDate: string;
+  dailyChallengeCompleted: boolean;
+  unlockedAchievementIds: string[];
 }
 
 export const useProgress = (userId: string = 'user-123') => {
@@ -35,7 +37,7 @@ export const useProgress = (userId: string = 'user-123') => {
 
   const updateProgress = async (updates: Partial<UserProgress>) => {
     if (!progress) return;
-    
+
     // Optimistic update (simple merge, though api service has the real logic)
     // We rely on the API response to get the calculated streak/level back
     try {
