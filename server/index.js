@@ -1,24 +1,27 @@
-import mongoose from 'mongoose';
 import dotenv from 'dotenv';
 import app from './app.js';
+import connectDB from './config/db.js';
+import Problem from './models/Problem.js';
+import User from './models/User.js';
+import { MOCK_PROBLEMS, MOCK_USER } from './seeds/data.js';
 
 dotenv.config();
 
 const PORT = process.env.PORT || 5000;
-const MONGO_URI = process.env.MONGO_URI || 'mongodb://localhost:27017/brilliant_clone';
-
-const connectDB = async () => {
-  try {
-    await mongoose.connect(MONGO_URI);
-    console.log('MongoDB Connected');
-  } catch (error) {
-    console.error(`Error: ${error.message}`);
-    process.exit(1);
-  }
-};
 
 // Connect to DB and listen
-connectDB().then(() => {
+connectDB().then(async () => {
+  // Auto-seed if in-memory database is used
+  if (!process.env.MONGO_URI) {
+    const problemCount = await Problem.countDocuments();
+    if (problemCount === 0) {
+      console.log('In-memory database detected, auto-seeding...');
+      await Problem.insertMany(MOCK_PROBLEMS);
+      await User.create(MOCK_USER);
+      console.log('Auto-seeding complete.');
+    }
+  }
+
   app.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`);
   });

@@ -1,32 +1,35 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 
-export const LogicScenarioTester: React.FC = () => {
+interface Sign {
+    id: number;
+    text: string;
+    trueIfDoorIs: number[]; // Array of door numbers that make this sign true
+}
+
+interface LogicScenarioTesterProps {
+    doorCount?: number;
+    signs?: Sign[];
+}
+
+export const LogicScenarioTester: React.FC<LogicScenarioTesterProps> = ({
+    doorCount = 3,
+    signs = [
+        { id: 1, text: "This is the door", trueIfDoorIs: [1] },
+        { id: 2, text: "The door to freedom is to the right", trueIfDoorIs: [3] },
+        { id: 3, text: "The door to freedom is not here", trueIfDoorIs: [1, 2] },
+    ]
+}) => {
     const [selectedDoor, setSelectedDoor] = useState<number | null>(null);
 
-    const signs = [
-        { id: 1, text: "This is the door", condition: (door: number) => door === 1 },
-        { id: 2, text: "The door to freedom is to the right", condition: (door: number) => door === 2 }, // Assuming "to the right" means door 2 if you are at door 1? Wait, "right" usually means next index.
-        // Let's stick to the problem's actual text logic: 
-        // Door 1: "This is the door" (True if D1 is freedom)
-        // Door 2: "The door to freedom is to the right" (True if D3 is freedom? Or D2? Usually Door 2's right is Door 3)
-        // Door 3: "The door to freedom is not here" (True if D1 or D2 is freedom)
-    ];
-
-    // Refined based on the puzzle:
-    // D1 sign: T if D1 is freedom
-    // D2 sign: T if D3 is freedom (to the right of D2 is D3) -- Wait, the puzzle says "freedom is to the right" on D2. 
-    // D3 sign: T if D3 is NOT freedom (D1 or D2 is freedom)
-
     const testScenario = (freedomDoor: number) => {
-        const s1 = freedomDoor === 1;
-        const s2 = freedomDoor === 3;
-        const s3 = freedomDoor !== 3;
-        return [s1, s2, s3];
+        return signs.map(sign => sign.trueIfDoorIs.includes(freedomDoor));
     };
 
-    const results = selectedDoor !== null ? testScenario(selectedDoor) : [null, null, null];
+    const results = selectedDoor !== null ? testScenario(selectedDoor) : signs.map(() => null);
     const trueCount = results.filter(r => r === true).length;
+
+    const doorArray = Array.from({ length: doorCount }, (_, i) => i + 1);
 
     return (
         <div className="bg-gray-50 rounded-2xl p-8 my-8 border border-gray-100 shadow-inner">
@@ -36,13 +39,13 @@ export const LogicScenarioTester: React.FC = () => {
             </div>
 
             <div className="grid grid-cols-3 gap-4 mb-8">
-                {[1, 2, 3].map((num) => (
+                {doorArray.map((num) => (
                     <button
                         key={num}
                         onClick={() => setSelectedDoor(num)}
                         className={`p-4 rounded-xl border-2 transition-all flex flex-col items-center gap-2 ${selectedDoor === num
-                                ? 'bg-blue-50 border-blue-500 shadow-md scale-105'
-                                : 'bg-white border-gray-200 hover:border-blue-200 hover:bg-blue-50/30'
+                            ? 'bg-blue-50 border-blue-500 shadow-md scale-105'
+                            : 'bg-white border-gray-200 hover:border-blue-200 hover:bg-blue-50/30'
                             }`}
                     >
                         <span className="text-3xl">🚪</span>
@@ -56,10 +59,10 @@ export const LogicScenarioTester: React.FC = () => {
                     <div
                         key={sign.id}
                         className={`p-4 rounded-xl border flex items-center justify-between transition-all ${selectedDoor === null
-                                ? 'bg-white border-gray-100 opacity-50'
-                                : results[idx]
-                                    ? 'bg-green-50 border-green-200'
-                                    : 'bg-red-50 border-red-200'
+                            ? 'bg-white border-gray-100 opacity-50'
+                            : results[idx]
+                                ? 'bg-green-50 border-green-200'
+                                : 'bg-red-50 border-red-200'
                             }`}
                     >
                         <div className="flex flex-col">

@@ -22,6 +22,16 @@ const userSchema = new mongoose.Schema({
     required: true,
     unique: true
   },
+  email: {
+    type: String,
+    sparse: true
+  },
+  displayName: {
+    type: String
+  },
+  avatar: {
+    type: String
+  },
   totalXP: {
     type: Number,
     default: 0
@@ -50,27 +60,35 @@ const userSchema = new mongoose.Schema({
     type: Date,
     default: Date.now
   },
+  dailyChallengeCompleted: {
+    type: Boolean,
+    default: false
+  },
+  achievements: [{
+    id: String,
+    unlockedAt: { type: Date, default: Date.now }
+  }],
   history: [historySchema]
 }, {
   timestamps: true
 });
 
 // Method to calculate level based on XP
-userSchema.methods.calculateLevel = function() {
+userSchema.methods.calculateLevel = function () {
   // Simple formula: 1000 XP per level
   this.level = Math.floor(this.totalXP / 1000) + 1;
 };
 
 // Method to update streak
-userSchema.methods.updateStreak = function() {
+userSchema.methods.updateStreak = function () {
   const now = new Date();
   const last = new Date(this.lastActiveDate);
-  
+
   const isSameDay = now.toDateString() === last.toDateString();
   const isYesterday = new Date(now.setDate(now.getDate() - 1)).toDateString() === last.toDateString();
-  
+
   // Reset date for 'now' variable after mutation above
-  const today = new Date(); 
+  const today = new Date();
 
   if (!isSameDay) {
     if (isYesterday) {
@@ -78,11 +96,11 @@ userSchema.methods.updateStreak = function() {
     } else {
       this.currentStreak = 1; // Reset if missed a day
     }
-    
+
     if (this.currentStreak > this.longestStreak) {
       this.longestStreak = this.currentStreak;
     }
-    
+
     this.lastActiveDate = today;
   }
 };

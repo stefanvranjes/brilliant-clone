@@ -21,6 +21,8 @@ export interface Problem {
   solution: Solution;
   xpReward: number;
   estimatedTime: number; // in minutes
+  options?: string[]; // Added for multiple-choice
+  visualizationId?: string; // Added for UI integration
 }
 
 export interface Hint {

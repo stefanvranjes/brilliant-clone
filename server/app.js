@@ -14,7 +14,18 @@ app.use(express.json());
 app.use('/api/problems', problemRoutes);
 app.use('/api/users', userRoutes);
 
-// Health Check
+// Health Check & Root
+app.get('/', (req, res) => {
+  res.status(200).json({
+    message: 'Welcome to Brilliant Clone API',
+    endpoints: {
+      problems: '/api/problems',
+      users: '/api/users',
+      health: '/health'
+    }
+  });
+});
+
 app.get('/health', (req, res) => {
   res.status(200).json({ status: 'ok', timestamp: new Date() });
 });

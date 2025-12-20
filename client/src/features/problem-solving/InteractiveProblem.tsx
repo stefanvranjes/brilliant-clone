@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { Problem } from '../../../../shared/types';
 import { useParams, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { useProblem } from '../../hooks/useProblem';
@@ -11,10 +12,35 @@ import { BinaryExplorer } from '../visualization/BinaryExplorer';
 import { AlgebraBalance } from '../visualization/AlgebraBalance';
 import { LogicScenarioTester } from '../visualization/LogicScenarioTester';
 
-const VISUALIZATIONS: Record<string, React.ReactNode> = {
-  'binary-explorer': <BinaryExplorer />,
-  'algebra-balance': <AlgebraBalance />,
-  'logic-scenario': <LogicScenarioTester />
+const renderVisualization = (problem: Problem) => {
+  if (!problem.visualizationId) return null;
+
+  // In a real app, this data might be in problem.solution.visualizations[0].data
+  // For now, we'll try to extract it from the problem object or a placeholder
+  const config = (problem as any).visualizationConfig || {};
+
+  switch (problem.visualizationId) {
+    case 'binary-explorer':
+      return <BinaryExplorer initialBits={config.initialBits} />;
+    case 'algebra-balance':
+      return (
+        <AlgebraBalance
+          target={config.target}
+          constant={config.constant}
+          multiplier={config.multiplier}
+          variableName={config.variableName}
+        />
+      );
+    case 'logic-scenario':
+      return (
+        <LogicScenarioTester
+          doorCount={config.doorCount}
+          signs={config.signs}
+        />
+      );
+    default:
+      return null;
+  }
 };
 
 const InteractiveProblem = () => {
@@ -39,11 +65,11 @@ const InteractiveProblem = () => {
     if (problem.type === 'multiple-choice') {
       if (!selectedOption) return;
       userAnswer = selectedOption;
-      correct = selectedOption === problem.correctAnswer;
-    } else if (problem.type === 'fill-in-the-blank') {
+      correct = selectedOption === problem.solution.answer;
+    } else if (problem.type === 'numerical') {
       if (!textInput.trim()) return;
       userAnswer = textInput.trim();
-      correct = userAnswer.toLowerCase() === String(problem.correctAnswer).toLowerCase();
+      correct = userAnswer.toLowerCase() === String(problem.solution.answer).toLowerCase();
     }
 
     setIsCorrect(correct);
@@ -53,7 +79,7 @@ const InteractiveProblem = () => {
       updateProgress({
         totalXP: (problem.xpReward || 0),
         problemsSolved: 1,
-        dailyChallengeCompleted: problem.isDaily || false
+        dailyChallengeCompleted: (problem as any).isDaily || false
       });
       setShowModal(true);
     }
@@ -71,7 +97,7 @@ const InteractiveProblem = () => {
 
   const isSubmitDisabled =
     (problem.type === 'multiple-choice' && !selectedOption) ||
-    (problem.type === 'fill-in-the-blank' && !textInput.trim()) ||
+    ((problem.type === 'numerical' || (problem.type as string) === 'fill-in-the-blank') && !textInput.trim()) ||
     isSubmitted;
 
   return (
@@ -82,7 +108,7 @@ const InteractiveProblem = () => {
           <span className="text-xs font-bold bg-gray-100 px-2 py-1 rounded text-gray-500 uppercase">
             {problem.category}
           </span>
-          <span className="text-xs font-bold bg-yellow-100 text-yellow-700 px-2 py-1 rounded">
+          <span className="text-xs font-bold bg-yellow-100 text-yellow-700 px-2 py-1 rounded capitalize">
             {problem.difficulty}
           </span>
         </div>
@@ -93,13 +119,13 @@ const InteractiveProblem = () => {
       </div>
 
       {/* VISUALIZATION AREA */}
-      {problem.visualizationId && VISUALIZATIONS[problem.visualizationId] && (
+      {problem.visualizationId && (
         <motion.div
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
           className="mb-8"
         >
-          {VISUALIZATIONS[problem.visualizationId]}
+          {renderVisualization(problem)}
         </motion.div>
       )}
 
@@ -115,9 +141,9 @@ const InteractiveProblem = () => {
                 whileHover={!isSubmitted ? { scale: 1.01 } : {}}
                 whileTap={!isSubmitted ? { scale: 0.99 } : {}}
                 onClick={() => !isSubmitted && setSelectedOption(option)}
-                className={`p-4 rounded-xl border-2 cursor-pointer transition-colors flex items-center justify-between ${isSubmitted && option === problem.correctAnswer
+                className={`p-4 rounded-xl border-2 cursor-pointer transition-colors flex items-center justify-between ${isSubmitted && option === problem.solution.answer
                   ? 'bg-green-50 border-green-500 text-green-900'
-                  : isSubmitted && option === selectedOption && option !== problem.correctAnswer
+                  : isSubmitted && option === selectedOption && option !== problem.solution.answer
                     ? 'bg-red-50 border-red-500 text-red-900'
                     : selectedOption === option
                       ? 'bg-blue-50 border-blue-500 text-blue-900 ring-2 ring-blue-200'
@@ -125,10 +151,10 @@ const InteractiveProblem = () => {
                   }`}
               >
                 <span className="font-medium text-lg">{option}</span>
-                {isSubmitted && option === problem.correctAnswer && (
+                {isSubmitted && option === problem.solution.answer && (
                   <motion.span initial={{ scale: 0 }} animate={{ scale: 1 }} className="text-green-600">✓</motion.span>
                 )}
-                {isSubmitted && option === selectedOption && option !== problem.correctAnswer && (
+                {isSubmitted && option === selectedOption && option !== problem.solution.answer && (
                   <motion.span initial={{ scale: 0 }} animate={{ scale: 1 }} className="text-red-600">✕</motion.span>
                 )}
               </motion.div>
@@ -136,8 +162,8 @@ const InteractiveProblem = () => {
           </div>
         )}
 
-        {/* FILL IN THE BLANK */}
-        {problem.type === 'fill-in-the-blank' && (
+        {/* FILL IN THE BLANK / NUMERICAL */}
+        {(problem.type === 'numerical' || (problem.type as string) === 'fill-in-the-blank') && (
           <div className="max-w-md mx-auto">
             <label className="block text-sm font-bold text-gray-700 mb-2">
               Your Answer
@@ -163,7 +189,7 @@ const InteractiveProblem = () => {
                   {isCorrect ? (
                     <><span>✓</span> Correct!</>
                   ) : (
-                    <><span>✕</span> Incorrect. The answer is {problem.correctAnswer}</>
+                    <><span>✕</span> Incorrect. The answer is {problem.solution.answer}</>
                   )}
                 </motion.div>
               )}
@@ -172,7 +198,7 @@ const InteractiveProblem = () => {
         )}
 
         {/* GENERIC FALLBACK */}
-        {problem.type !== 'multiple-choice' && problem.type !== 'fill-in-the-blank' && (
+        {problem.type !== 'multiple-choice' && problem.type !== 'numerical' && (
           <div className="p-8 text-center text-gray-500 bg-gray-50 rounded-xl">
             Interactive component placeholder for type: {problem.type}
           </div>

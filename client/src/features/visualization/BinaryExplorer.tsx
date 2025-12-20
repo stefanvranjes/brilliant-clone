@@ -1,8 +1,14 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 
-export const BinaryExplorer: React.FC = () => {
-    const [bits, setBits] = useState([1, 0, 1, 1]); // 4-bit explorer for now
+interface BinaryExplorerProps {
+    initialBits?: number[];
+}
+
+export const BinaryExplorer: React.FC<BinaryExplorerProps> = ({
+    initialBits = [1, 0, 1, 1]
+}) => {
+    const [bits, setBits] = useState(initialBits);
 
     const toggleBit = (index: number) => {
         const newBits = [...bits];

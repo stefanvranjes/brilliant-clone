@@ -20,7 +20,10 @@ export const getUserProgress = async (req, res, next) => {
       });
     }
 
-    res.status(200).json(user);
+    const userData = user.toObject();
+    userData.unlockedAchievementIds = user.achievements ? user.achievements.map(a => a.id) : [];
+
+    res.status(200).json(userData);
   } catch (error) {
     res.status(500);
     next(error);
@@ -49,14 +52,14 @@ export const solveProblem = async (req, res, next) => {
 
     // Check if already solved to prevent duplicate XP? 
     // For now, allow re-solving but maybe limit XP
-    
+
     user.totalXP += problem.xpReward;
     user.problemsSolved += 1;
     user.timeSpent += timeSpent || 0; // Add minutes
-    
+
     // Update Level
     user.calculateLevel();
-    
+
     // Update Streak
     user.updateStreak();
 
@@ -68,7 +71,10 @@ export const solveProblem = async (req, res, next) => {
 
     await user.save();
 
-    res.status(200).json(user);
+    const userData = user.toObject();
+    userData.unlockedAchievementIds = user.achievements ? user.achievements.map(a => a.id) : [];
+
+    res.status(200).json(userData);
   } catch (error) {
     res.status(500);
     next(error);

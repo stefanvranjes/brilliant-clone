@@ -1,5 +1,16 @@
 import mongoose from 'mongoose';
 
+const hintSchema = new mongoose.Schema({
+  content: { type: String, required: true },
+  order: { type: Number, required: true },
+  xpCost: { type: Number, default: 0 }
+});
+
+const solutionSchema = new mongoose.Schema({
+  answer: { type: mongoose.Schema.Types.Mixed, required: true },
+  explanation: { type: String, required: true }
+});
+
 const problemSchema = new mongoose.Schema({
   title: {
     type: String,
@@ -12,33 +23,41 @@ const problemSchema = new mongoose.Schema({
   },
   difficulty: {
     type: String,
-    enum: ['Easy', 'Medium', 'Hard'],
-    default: 'Medium'
+    enum: ['beginner', 'intermediate', 'advanced'],
+    default: 'intermediate'
   },
   type: {
     type: String,
-    enum: ['multiple-choice', 'fill-in-the-blank', 'interactive'],
+    enum: ['multiple-choice', 'numerical', 'code', 'interactive'],
     required: true
   },
   category: {
     type: String,
     required: true
   },
-  hints: {
+  tags: {
     type: [String],
     default: []
   },
+  hints: [hintSchema],
   options: {
-    type: [String], // For multiple-choice
+    type: [String],
     default: undefined
   },
-  correctAnswer: {
-    type: mongoose.Schema.Types.Mixed, // Can be String or Number
-    required: [true, 'Please provide a correct answer']
+  solution: {
+    type: solutionSchema,
+    required: true
   },
   xpReward: {
     type: Number,
     default: 100
+  },
+  estimatedTime: {
+    type: Number,
+    default: 5
+  },
+  visualizationId: {
+    type: String
   }
 }, {
   timestamps: true,
