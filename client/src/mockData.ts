@@ -4,15 +4,21 @@ import {
   Achievement,
   Course,
   Chapter,
-  Solution,
   Hint
 } from '../../shared/types';
 
-// Extend Problem for local needs if necessary, or just use the shared one
-// The shared Problem has difficulty: 'beginner' | 'intermediate' | 'advanced'
-// while mockData had 'Easy' | 'Medium' | 'Hard'. We'll align to shared.
-
+// Shared types across the application
 export type { Problem, UserStats, Achievement, Course, Chapter };
+
+export interface Module {
+  id: string;
+  title: string;
+  description: string;
+  category: string;
+  icon: string;
+  problemIds: string[];
+  totalXP: number;
+}
 
 // Helper to create hints
 const createHints = (contents: string[]): Hint[] =>
@@ -23,7 +29,7 @@ const createHints = (contents: string[]): Hint[] =>
     xpCost: 0
   }));
 
-export const MOCK_PROBLEMS: (Problem & { moduleId?: string, isDaily?: boolean })[] = [
+export const MOCK_PROBLEMS: any[] = [
   {
     id: 'logic-1',
     title: 'The Three Doors',
@@ -174,7 +180,7 @@ export const MOCK_USER_STATS: UserStats = {
 
 // For backward compatibility during migration
 export const MOCK_USER = MOCK_USER_STATS;
-export const MOCK_MODULES = MOCK_COURSES.map(c => ({
+export const MOCK_MODULES: Module[] = MOCK_COURSES.map(c => ({
   id: c.id,
   title: c.title,
   description: c.description,

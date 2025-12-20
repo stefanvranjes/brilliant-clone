@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { apiService } from '../services/api.service';
-import { Problem, UserProgress } from '../mockData';
+import { Problem } from '../mockData';
 
 export const useDailyChallenge = (userId: string = 'user-123') => {
     const [challenge, setChallenge] = useState<Problem | null>(null);

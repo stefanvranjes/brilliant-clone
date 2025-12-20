@@ -74,9 +74,9 @@ const ModuleDetail = () => {
                                 <div>
                                     <h3 className="text-lg font-bold text-gray-900 mb-1">{prob.title}</h3>
                                     <div className="flex items-center gap-3">
-                                        <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider ${prob.difficulty === 'Easy' ? 'bg-green-100 text-green-700' :
-                                                prob.difficulty === 'Medium' ? 'bg-yellow-100 text-yellow-700' :
-                                                    'bg-red-100 text-red-700'
+                                        <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider ${prob.difficulty === 'beginner' ? 'bg-green-100 text-green-700' :
+                                            prob.difficulty === 'intermediate' ? 'bg-yellow-100 text-yellow-700' :
+                                                'bg-red-100 text-red-700'
                                             }`}>
                                             {prob.difficulty}
                                         </span>

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { apiService } from '../services/api.service';
 
 // Sync this interface with the one in mockData/apiService to avoid confusion
@@ -19,7 +19,7 @@ export const useProgress = (userId: string = 'user-123') => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const fetchProgress = async () => {
+  const fetchProgress = React.useCallback(async () => {
     try {
       setLoading(true);
       const data = await apiService.getUserProgress(userId);
@@ -29,17 +29,15 @@ export const useProgress = (userId: string = 'user-123') => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [userId]);
 
   useEffect(() => {
     fetchProgress();
-  }, [userId]);
+  }, [userId, fetchProgress]);
 
   const updateProgress = async (updates: Partial<UserProgress>) => {
     if (!progress) return;
 
-    // Optimistic update (simple merge, though api service has the real logic)
-    // We rely on the API response to get the calculated streak/level back
     try {
       const updatedData = await apiService.updateProgress(userId, updates);
       setProgress(updatedData);
