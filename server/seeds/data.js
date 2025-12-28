@@ -1,5 +1,6 @@
 export const MOCK_PROBLEMS = [
     {
+        slug: 'logic-1',
         title: 'The Three Doors',
         description: 'You are faced with three doors. One leads to freedom, one leads to a fiery pit, and one leads to an endless void. The door to freedom has a sign that says "This is the door". The fiery pit door says "The door to freedom is to the right". The void door says "The door to freedom is not here". Only one sign is true.',
         difficulty: 'intermediate',
@@ -28,6 +29,7 @@ export const MOCK_PROBLEMS = [
         }
     },
     {
+        slug: 'binary-explorer',
         title: 'Binary Basics',
         description: 'What is the decimal representation of the binary number 1011?',
         difficulty: 'beginner',
@@ -52,6 +54,7 @@ export const MOCK_PROBLEMS = [
         }
     },
     {
+        slug: 'math-1', // Actually math-1 in frontend mockData, let's keep it consistent
         title: 'Simple Algebra',
         description: 'Solve for x: 2x + 5 = 15',
         difficulty: 'beginner',
@@ -81,9 +84,74 @@ export const MOCK_PROBLEMS = [
 export const MOCK_USER = {
     username: 'user-123',
     displayName: 'Stefan',
+    email: 'stefan@example.com',
+    password: 'password123',
     totalXP: 1250,
     level: 2,
     currentStreak: 5,
     longestStreak: 7,
     problemsSolved: 12
 };
+
+export const MOCK_ACHIEVEMENTS = [
+    {
+        id: 'first-step',
+        title: 'First Step',
+        description: 'Solve your first problem',
+        icon: '🚀',
+        problemsRequired: 1
+    },
+    {
+        id: 'streak-3',
+        title: 'Momentum',
+        description: 'Maintain a 3-day streak',
+        icon: '🔥',
+        streakRequired: 3
+    },
+    {
+        id: 'xp-1000',
+        title: 'Knowledgeable',
+        description: 'Earn 1000 total XP',
+        icon: '📚',
+        xpRequired: 1000
+    }
+];
+
+export const MOCK_COURSES = [
+    {
+        id: 'math-fundamentals',
+        title: 'Mathematical Fundamentals',
+        description: 'Master the core concepts of algebra and numerical patterns.',
+        category: 'Mathematics',
+        difficulty: 'beginner',
+        estimatedHours: 2,
+        enrollmentCount: 1500,
+        chapters: [
+            {
+                title: 'Numerical Patterns',
+                description: 'Explore the beauty of numbers.',
+                order: 1,
+                problems: ['math-1', 'math-2'], // These are placeholders, will be mapped to ObjectIds
+                isLocked: false
+            }
+        ]
+    },
+    {
+        id: 'logic-modeling',
+        title: 'Logic & Modeling',
+        description: 'Learn to think like a logician through puzzles and scenarios.',
+        category: 'Logic',
+        difficulty: 'intermediate',
+        estimatedHours: 3,
+        enrollmentCount: 1200,
+        chapters: [
+            {
+                title: 'The Art of Deduction',
+                description: 'Solve complex logical puzzles.',
+                order: 1,
+                problems: ['logic-1'],
+                isLocked: false
+            }
+        ]
+    }
+];

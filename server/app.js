@@ -2,6 +2,9 @@ import express from 'express';
 import cors from 'cors';
 import problemRoutes from './routes/problemRoutes.js';
 import userRoutes from './routes/userRoutes.js';
+import courseRoutes from './routes/courseRoutes.js';
+import achievementRoutes from './routes/achievementRoutes.js';
+import authRoutes from './routes/authRoutes.js';
 import { errorHandler } from './middleware/errorHandler.js';
 
 const app = express();
@@ -13,6 +16,9 @@ app.use(express.json());
 // Routes
 app.use('/api/problems', problemRoutes);
 app.use('/api/users', userRoutes);
+app.use('/api/courses', courseRoutes);
+app.use('/api/achievements', achievementRoutes);
+app.use('/api/auth', authRoutes);
 
 // Health Check & Root
 app.get('/', (req, res) => {

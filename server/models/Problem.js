@@ -17,6 +17,11 @@ const problemSchema = new mongoose.Schema({
     required: [true, 'Please add a title'],
     trim: true
   },
+  slug: {
+    type: String,
+    required: true,
+    unique: true
+  },
   description: {
     type: String,
     required: [true, 'Please add a description']

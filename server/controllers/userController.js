@@ -6,18 +6,11 @@ import Problem from '../models/Problem.js';
 // @access  Public (should be private)
 export const getUserProgress = async (req, res, next) => {
   try {
-    // In a real app, we'd use req.user.id from auth token
-    // For this clone, we accept ID in params or create a default one
-    let user = await User.findOne({ username: req.params.id });
+    // Use req.user.id from protect middleware
+    const user = await User.findById(req.user.id);
 
     if (!user) {
-      // Auto-create for demo purposes if not found
-      user = await User.create({
-        username: req.params.id,
-        totalXP: 0,
-        level: 1,
-        currentStreak: 1
-      });
+      return res.status(404).json({ message: 'User not found' });
     }
 
     const userData = user.toObject();
@@ -25,7 +18,6 @@ export const getUserProgress = async (req, res, next) => {
 
     res.status(200).json(userData);
   } catch (error) {
-    res.status(500);
     next(error);
   }
 };
@@ -36,12 +28,10 @@ export const getUserProgress = async (req, res, next) => {
 export const solveProblem = async (req, res, next) => {
   try {
     const { problemId, timeSpent } = req.body;
-    const username = req.params.id;
 
-    const user = await User.findOne({ username });
+    const user = await User.findById(req.user.id);
     if (!user) {
-      res.status(404);
-      throw new Error('User not found');
+      return res.status(404).json({ message: 'User not found' });
     }
 
     const problem = await Problem.findById(problemId);

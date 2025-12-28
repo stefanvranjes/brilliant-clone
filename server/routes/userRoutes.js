@@ -3,8 +3,8 @@ import { getUserProgress, solveProblem, updateUser } from '../controllers/userCo
 
 const router = express.Router();
 
-router.get('/:id', getUserProgress);
-router.post('/:id/solve', solveProblem);
-router.put('/:id', updateUser);
+router.get('/me', protect, getUserProgress);
+router.post('/solve', protect, solveProblem);
+router.put('/profile', protect, updateUser);
 
 export default router;

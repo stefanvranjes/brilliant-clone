@@ -1,5 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { BrowserRouter as Router, Routes, Route, Link, useLocation } from 'react-router-dom';
+import { useAuth } from './context/AuthContext';
 import { AnimatePresence } from 'framer-motion';
 import ProgressDashboard from './features/dashboard/ProgressDashboard';
 import InteractiveProblem from './features/problem-solving/InteractiveProblem';
@@ -87,25 +88,53 @@ const Home = () => {
   );
 };
 
-const Layout = ({ children }: { children: React.ReactNode }) => (
-  <div className="min-h-screen bg-gray-50 text-gray-900 font-sans">
-    <nav className="bg-white border-b border-gray-200 sticky top-0 z-10">
-      <div className="max-w-6xl mx-auto px-4 h-16 flex items-center justify-between">
-        <Link to="/" className="text-2xl font-black tracking-tighter flex items-center gap-2">
-          <div className="w-8 h-8 bg-black rounded-lg flex items-center justify-center text-white">B</div>
-          <span>BrilliantClone</span>
-        </Link>
-        <div className="flex gap-4">
-          <Link to="/" className="text-sm font-medium text-gray-600 hover:text-black">Explore</Link>
-          <Link to="/dashboard" className="text-sm font-medium text-gray-600 hover:text-black">My Progress</Link>
+import Login from './pages/auth/Login';
+import Register from './pages/auth/Register';
+
+const Layout = ({ children }: { children: React.ReactNode }) => {
+  const { user, logout } = useAuth();
+
+  return (
+    <div className="min-h-screen bg-gray-50 text-gray-900 font-sans">
+      <nav className="bg-white border-b border-gray-200 sticky top-0 z-10">
+        <div className="max-w-6xl mx-auto px-4 h-16 flex items-center justify-between">
+          <Link to="/" className="text-2xl font-black tracking-tighter flex items-center gap-2">
+            <div className="w-8 h-8 bg-black rounded-lg flex items-center justify-center text-white">B</div>
+            <span>BrilliantClone</span>
+          </Link>
+          <div className="flex items-center gap-6">
+            <div className="hidden md:flex gap-6">
+              <Link to="/" className="text-sm font-bold text-gray-500 hover:text-black transition-colors">Explore</Link>
+              <Link to="/dashboard" className="text-sm font-bold text-gray-500 hover:text-black transition-colors">My Progress</Link>
+            </div>
+            <div className="h-6 w-[1px] bg-gray-100 hidden md:block"></div>
+            {user ? (
+              <div className="flex items-center gap-4">
+                <span className="text-sm font-black text-gray-900 hidden sm:block">Hi, {user.displayName}</span>
+                <button
+                  onClick={logout}
+                  className="text-xs font-black uppercase tracking-widest text-gray-400 hover:text-red-500 transition-colors"
+                >
+                  Logout
+                </button>
+              </div>
+            ) : (
+              <div className="flex items-center gap-4">
+                <Link to="/login" className="text-sm font-bold text-gray-600 hover:text-black">Log in</Link>
+                <Link to="/register" className="bg-black text-white px-5 py-2 rounded-xl text-sm font-black hover:bg-gray-800 transition-all active:scale-[0.98]">
+                  Sign up
+                </Link>
+              </div>
+            )}
+          </div>
         </div>
-      </div>
-    </nav>
-    <main>
-      {children}
-    </main>
-  </div>
-);
+      </nav>
+      <main>
+        {children}
+      </main>
+    </div>
+  );
+};
 
 const AnimatedRoutes = () => {
   const location = useLocation();
@@ -117,6 +146,8 @@ const AnimatedRoutes = () => {
         <Route path="/dashboard" element={<ProgressDashboard />} />
         <Route path="/module/:moduleId" element={<ModuleDetail />} />
         <Route path="/problem/:problemId" element={<InteractiveProblem />} />
+        <Route path="/login" element={<Login />} />
+        <Route path="/register" element={<Register />} />
       </Routes>
     </AnimatePresence>
   );
