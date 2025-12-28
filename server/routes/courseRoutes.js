@@ -1,7 +1,9 @@
 import express from 'express';
-import { getCourses, getCourse } from '../controllers/courseController.js';
+import { getCourses, getCourse, searchCourses } from '../controllers/courseController.js';
 
 const router = express.Router();
+
+router.get('/search', searchCourses);
 
 router.get('/', getCourses);
 router.get('/:id', getCourse);

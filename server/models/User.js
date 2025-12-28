@@ -81,6 +81,11 @@ const userSchema = new mongoose.Schema({
     id: String,
     unlockedAt: { type: Date, default: Date.now }
   }],
+  role: {
+    type: String,
+    enum: ['user', 'admin', 'editor'],
+    default: 'user'
+  },
   history: [historySchema]
 }, {
   timestamps: true

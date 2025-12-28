@@ -1,4 +1,5 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { BrowserRouter as Router, Routes, Route, Link, useLocation } from 'react-router-dom';
 import { useAuth } from './context/AuthContext';
 import { AnimatePresence } from 'framer-motion';
@@ -12,6 +13,10 @@ import { DailyChallengeCard } from './components/ui/DailyChallengeCard';
 import { useDailyChallenge } from './hooks/useDailyChallenge';
 import { useProgress } from './hooks/useProgress';
 import Leaderboard from './pages/Leaderboard';
+import AdminDashboard from './pages/AdminDashboard';
+import ProblemList from './pages/admin/ProblemList';
+import ProblemEditor from './pages/admin/ProblemEditor';
+import CourseManager from './pages/admin/CourseManager';
 
 // Simple Landing/Home Component to list modules
 const Home = () => {
@@ -19,6 +24,31 @@ const Home = () => {
   const { challenge, isCompleted, loading: challengeLoading } = useDailyChallenge();
   const { progress } = useProgress();
   const [selectedCategory, setSelectedCategory] = useState('All');
+  const [searchQuery, setSearchQuery] = useState('');
+  const [searchResults, setSearchResults] = useState<any[]>([]);
+  const [isSearching, setIsSearching] = useState(false);
+
+  useEffect(() => {
+    const performSearch = async () => {
+      if (searchQuery.length < 2) {
+        setSearchResults([]);
+        return;
+      }
+      setIsSearching(true);
+      try {
+        const res = await fetch(`http://localhost:5000/api/courses/search?q=${searchQuery}`);
+        const data = await res.json();
+        setSearchResults(data);
+      } catch (err) {
+        console.error('Search failed:', err);
+      } finally {
+        setIsSearching(false);
+      }
+    };
+
+    const timer = setTimeout(performSearch, 300);
+    return () => clearTimeout(timer);
+  }, [searchQuery]);
 
   const categories = useMemo(() => {
     const uniqueCats = Array.from(new Set(modules.map((m: any) => m.category)));
@@ -26,9 +56,10 @@ const Home = () => {
   }, [modules]);
 
   const filteredModules = useMemo(() => {
+    if (searchQuery.length >= 2) return searchResults;
     if (selectedCategory === 'All') return modules;
     return modules.filter((m: any) => m.category === selectedCategory);
-  }, [modules, selectedCategory]);
+  }, [modules, selectedCategory, searchResults, searchQuery]);
 
   if (modulesLoading || challengeLoading) return <div className="p-8 text-center text-gray-500 font-medium">Loading...</div>;
   if (modulesError) return <div className="p-8 text-center text-red-500 font-medium">{modulesError}</div>;
@@ -45,6 +76,26 @@ const Home = () => {
         <Link to="/dashboard" className="text-sm font-bold text-blue-600 bg-blue-50 px-6 py-3 rounded-xl hover:bg-blue-100 transition-colors">
           View My Progress
         </Link>
+      </div>
+
+      <div className="mb-12">
+        <div className="relative group max-w-2xl">
+          <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-gray-400 group-focus-within:text-black transition-colors">
+            <span className="text-xl">🔍</span>
+          </div>
+          <input
+            type="text"
+            placeholder="Search courses by topic, title, or category..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="block w-full pl-12 pr-4 py-4 bg-white border-2 border-gray-100 rounded-2xl leading-5 focus:outline-none focus:border-black focus:ring-0 sm:text-lg font-medium transition-all shadow-sm hover:border-gray-200"
+          />
+          {isSearching && (
+            <div className="absolute inset-y-0 right-0 pr-4 flex items-center">
+              <div className="animate-spin h-5 w-5 border-2 border-gray-300 border-t-black rounded-full"></div>
+            </div>
+          )}
+        </div>
       </div>
 
       <DailyChallengeCard
@@ -149,6 +200,11 @@ const AnimatedRoutes = () => {
         <Route path="/module/:moduleId" element={<ModuleDetail />} />
         <Route path="/problem/:problemId" element={<InteractiveProblem />} />
         <Route path="/leaderboard" element={<Leaderboard />} />
+        <Route path="/admin" element={<AdminDashboard />} />
+        <Route path="/admin/problems" element={<ProblemList />} />
+        <Route path="/admin/problems/new" element={<ProblemEditor />} />
+        <Route path="/admin/problems/edit/:id" element={<ProblemEditor />} />
+        <Route path="/admin/courses" element={<CourseManager />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
       </Routes>

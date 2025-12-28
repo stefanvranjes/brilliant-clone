@@ -31,3 +31,26 @@ export const getCourse = async (req, res, next) => {
         next(error);
     }
 };
+
+// @desc    Search courses
+// @route   GET /api/courses/search
+// @access  Public
+export const searchCourses = async (req, res, next) => {
+    try {
+        const { q } = req.query;
+        if (!q) {
+            return res.status(400).json({ message: 'Search query is required' });
+        }
+
+        const courses = await Course.find(
+            { $text: { $search: q } },
+            { score: { $meta: 'textScore' } }
+        )
+            .sort({ score: { $meta: 'textScore' } })
+            .limit(20);
+
+        res.status(200).json(courses);
+    } catch (error) {
+        next(error);
+    }
+};

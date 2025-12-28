@@ -166,5 +166,44 @@ export const apiService = {
       body: data ? JSON.stringify(data) : undefined
     });
     return handleResponse(response);
+  },
+
+  // Admin Methods
+  createProblem: async (problemData: any): Promise<Problem> => {
+    return apiService.post('/admin/problems', problemData);
+  },
+
+  updateProblem: async (id: string, problemData: any): Promise<Problem> => {
+    const response = await fetch(`${API_URL}/admin/problems/${id}`, {
+      method: 'PUT',
+      headers: getHeaders(),
+      body: JSON.stringify(problemData)
+    });
+    return handleResponse(response);
+  },
+
+  deleteProblem: async (id: string): Promise<void> => {
+    const response = await fetch(`${API_URL}/admin/problems/${id}`, {
+      method: 'DELETE',
+      headers: getHeaders()
+    });
+    return handleResponse(response);
+  },
+
+  createCourse: async (courseData: any): Promise<any> => {
+    return apiService.post('/admin/courses', courseData);
+  },
+
+  updateCourse: async (id: string, courseData: any): Promise<any> => {
+    const response = await fetch(`${API_URL}/admin/courses/${id}`, {
+      method: 'PUT',
+      headers: getHeaders(),
+      body: JSON.stringify(courseData)
+    });
+    return handleResponse(response);
+  },
+
+  createChapter: async (courseId: string, chapterData: any): Promise<any> => {
+    return apiService.post(`/admin/courses/${courseId}/chapters`, chapterData);
   }
 };
