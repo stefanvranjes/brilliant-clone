@@ -11,6 +11,7 @@ import { PageTransition } from './components/ui/PageTransition';
 import { DailyChallengeCard } from './components/ui/DailyChallengeCard';
 import { useDailyChallenge } from './hooks/useDailyChallenge';
 import { useProgress } from './hooks/useProgress';
+import Leaderboard from './pages/Leaderboard';
 
 // Simple Landing/Home Component to list modules
 const Home = () => {
@@ -106,6 +107,7 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
             <div className="hidden md:flex gap-6">
               <Link to="/" className="text-sm font-bold text-gray-500 hover:text-black transition-colors">Explore</Link>
               <Link to="/dashboard" className="text-sm font-bold text-gray-500 hover:text-black transition-colors">My Progress</Link>
+              <Link to="/leaderboard" className="text-sm font-bold text-gray-500 hover:text-black transition-colors">Leaderboard</Link>
             </div>
             <div className="h-6 w-[1px] bg-gray-100 hidden md:block"></div>
             {user ? (
@@ -146,6 +148,7 @@ const AnimatedRoutes = () => {
         <Route path="/dashboard" element={<ProgressDashboard />} />
         <Route path="/module/:moduleId" element={<ModuleDetail />} />
         <Route path="/problem/:problemId" element={<InteractiveProblem />} />
+        <Route path="/leaderboard" element={<Leaderboard />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
       </Routes>

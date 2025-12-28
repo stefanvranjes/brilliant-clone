@@ -116,6 +116,61 @@ export const MOCK_PROBLEMS: any[] = [
     },
     moduleId: 'math-fundamentals',
     visualizationId: 'algebra-balance'
+  },
+  {
+    id: 'geom-1',
+    title: 'Circle Symmetry',
+    description: 'Which of these shapes has more than two lines of symmetry?',
+    difficulty: 'beginner',
+    type: 'choice-with-image',
+    category: 'Geometry',
+    tags: ['geometry', 'symmetry'],
+    options: [
+      { text: 'Rectangle', image: 'https://placehold.co/400x400/png?text=Rectangle' },
+      { text: 'Equilateral Triangle', image: 'https://placehold.co/400x400/png?text=Triangle' },
+      { text: 'Circle', image: 'https://placehold.co/400x400/png?text=Circle' },
+      { text: 'Isosceles Triangle', image: 'https://placehold.co/400x400/png?text=Isosceles' }
+    ],
+    hints: createHints([
+      'Symmetry lines divide a shape into mirror images.',
+      'A rectangle has 2, a triangle can have 3...',
+      'Think about a circle: how many ways can you fold it in half?'
+    ]),
+    xpReward: 125,
+    estimatedTime: 3,
+    solution: {
+      answer: 'Circle',
+      explanation: 'A circle has an infinite number of lines of symmetry, which is definitely more than two.'
+    },
+    moduleId: 'math-fundamentals'
+  },
+  {
+    id: 'geom-2',
+    title: 'Plotting Points',
+    description: 'Find the coordinate of the point marked in blue.',
+    difficulty: 'beginner',
+    type: 'numerical',
+    category: 'Geometry',
+    tags: ['geometry', 'coordinates'],
+    visualizationId: 'coordinate-plane',
+    visualizationConfig: {
+      points: [
+        { x: 3, y: 4, label: 'P', color: '#2563eb' }
+      ],
+      gridRange: 5
+    },
+    hints: createHints([
+      'Start at the origin (0,0).',
+      'Move right along the x-axis to 3.',
+      'Then move up along the y-axis to find the height.'
+    ]),
+    xpReward: 100,
+    estimatedTime: 2,
+    solution: {
+      answer: '4',
+      explanation: 'The point P is located at x=3 and y=4.'
+    },
+    moduleId: 'math-fundamentals'
   }
 ];
 

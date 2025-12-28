@@ -86,3 +86,19 @@ export const updateUser = async (req, res, next) => {
     next(error);
   }
 };
+
+// @desc    Get leaderboard
+// @route   GET /api/users/leaderboard
+// @access  Public
+export const getLeaderboard = async (req, res, next) => {
+  try {
+    const topUsers = await User.find()
+      .select('username displayName avatar totalXP currentStreak level')
+      .sort({ totalXP: -1 })
+      .limit(50);
+
+    res.status(200).json(topUsers);
+  } catch (error) {
+    next(error);
+  }
+};

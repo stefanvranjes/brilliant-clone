@@ -30,6 +30,7 @@ export interface Hint {
   content: string;
   order: number;
   xpCost: number;
+  visible?: boolean;
 }
 
 export interface Solution {

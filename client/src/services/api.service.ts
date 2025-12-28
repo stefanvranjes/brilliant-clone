@@ -149,5 +149,22 @@ export const apiService = {
       headers: getHeaders()
     });
     return handleResponse(response);
+  },
+
+  // Generic methods
+  get: async (endpoint: string): Promise<any> => {
+    const response = await fetch(`${API_URL}${endpoint}`, {
+      headers: getHeaders()
+    });
+    return handleResponse(response);
+  },
+
+  post: async (endpoint: string, data?: any): Promise<any> => {
+    const response = await fetch(`${API_URL}${endpoint}`, {
+      method: 'POST',
+      headers: getHeaders(),
+      body: data ? JSON.stringify(data) : undefined
+    });
+    return handleResponse(response);
   }
 };

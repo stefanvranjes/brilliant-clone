@@ -5,6 +5,7 @@ import userRoutes from './routes/userRoutes.js';
 import courseRoutes from './routes/courseRoutes.js';
 import achievementRoutes from './routes/achievementRoutes.js';
 import authRoutes from './routes/authRoutes.js';
+import commentRoutes from './routes/commentRoutes.js';
 import { errorHandler } from './middleware/errorHandler.js';
 
 const app = express();
@@ -19,6 +20,7 @@ app.use('/api/users', userRoutes);
 app.use('/api/courses', courseRoutes);
 app.use('/api/achievements', achievementRoutes);
 app.use('/api/auth', authRoutes);
+app.use('/api/comments', commentRoutes);
 
 // Health Check & Root
 app.get('/', (req, res) => {
