@@ -13,10 +13,12 @@ import { DailyChallengeCard } from './components/ui/DailyChallengeCard';
 import { useDailyChallenge } from './hooks/useDailyChallenge';
 import { useProgress } from './hooks/useProgress';
 import Leaderboard from './pages/Leaderboard';
+import UserProfilePage from './pages/UserProfilePage';
 import AdminDashboard from './pages/AdminDashboard';
 import ProblemList from './pages/admin/ProblemList';
 import ProblemEditor from './pages/admin/ProblemEditor';
 import CourseManager from './pages/admin/CourseManager';
+import { StudyRoom } from './features/community/StudyRoom';
 
 // Simple Landing/Home Component to list modules
 const Home = () => {
@@ -159,6 +161,7 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
               <Link to="/" className="text-sm font-bold text-gray-500 hover:text-black transition-colors">Explore</Link>
               <Link to="/dashboard" className="text-sm font-bold text-gray-500 hover:text-black transition-colors">My Progress</Link>
               <Link to="/leaderboard" className="text-sm font-bold text-gray-500 hover:text-black transition-colors">Leaderboard</Link>
+              <Link to="/study-room/general" className="text-sm font-bold text-gray-500 hover:text-black transition-colors">Study Rooms</Link>
             </div>
             <div className="h-6 w-[1px] bg-gray-100 hidden md:block"></div>
             {user ? (
@@ -200,11 +203,13 @@ const AnimatedRoutes = () => {
         <Route path="/module/:moduleId" element={<ModuleDetail />} />
         <Route path="/problem/:problemId" element={<InteractiveProblem />} />
         <Route path="/leaderboard" element={<Leaderboard />} />
+        <Route path="/profile/:userId" element={<UserProfilePage />} />
         <Route path="/admin" element={<AdminDashboard />} />
         <Route path="/admin/problems" element={<ProblemList />} />
         <Route path="/admin/problems/new" element={<ProblemEditor />} />
         <Route path="/admin/problems/edit/:id" element={<ProblemEditor />} />
         <Route path="/admin/courses" element={<CourseManager />} />
+        <Route path="/study-room/:roomId" element={<StudyRoom />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
       </Routes>

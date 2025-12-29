@@ -14,15 +14,16 @@ export interface Problem {
   title: string;
   description: string;
   difficulty: 'beginner' | 'intermediate' | 'advanced';
-  type: 'multiple-choice' | 'numerical' | 'code' | 'interactive';
+  type: 'multiple-choice' | 'numerical' | 'code' | 'interactive' | 'sorting' | 'logic-circuit';
   category: string;
   tags: string[];
   hints: Hint[];
   solution: Solution;
   xpReward: number;
   estimatedTime: number; // in minutes
-  options?: string[]; // Added for multiple-choice
+  options?: any[]; // Changed from string[] to any[] for more complex structures
   visualizationId?: string; // Added for UI integration
+  visualizationConfig?: any; // Added for consistency with usage
 }
 
 export interface Hint {

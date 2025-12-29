@@ -11,6 +11,8 @@ import { PageTransition } from '../../components/ui/PageTransition';
 import VisualizationEngine from '../visualization/VisualizationEngine';
 import DiscussionSection from '../community/DiscussionSection';
 import { useAuth } from '../../context/AuthContext';
+import { SortingInteraction } from './SortingInteraction';
+import { AiTutor } from '../ai-tutor/AiTutor';
 
 const InteractiveProblem = () => {
   const { problemId } = useParams<{ problemId: string }>();
@@ -29,6 +31,7 @@ const InteractiveProblem = () => {
   const [isCorrect, setIsCorrect] = useState(false);
   const [showModal, setShowModal] = useState(false);
   const [revealedHintIndices, setRevealedHintIndices] = useState<number[]>([]);
+  const [currentSortingOrder, setCurrentSortingOrder] = useState<string[]>([]);
 
   const toggleHint = (index: number) => {
     if (!revealedHintIndices.includes(index)) {
@@ -50,6 +53,11 @@ const InteractiveProblem = () => {
       if (!textInput.trim()) return;
       userAnswer = textInput.trim();
       correct = userAnswer.toLowerCase() === String(problem.solution.answer).toLowerCase();
+    } else if (problem.type === 'sorting') {
+      userAnswer = JSON.stringify(currentSortingOrder);
+      const correctOrder = problem.solution.answer as string[];
+      correct = currentSortingOrder.length === correctOrder.length &&
+        currentSortingOrder.every((id, idx) => id === correctOrder[idx]);
     }
 
     setIsCorrect(correct);
@@ -63,6 +71,12 @@ const InteractiveProblem = () => {
       });
       setShowModal(true);
     }
+  };
+
+  const handleShare = () => {
+    const text = `I just solved "${problem.title}" on BrilliantClone and earned ${problem.xpReward} XP! 🚀`;
+    navigator.clipboard.writeText(text);
+    alert('Progress summary copied to clipboard!');
   };
 
   const handleRetry = () => {
@@ -221,8 +235,18 @@ const InteractiveProblem = () => {
           </div>
         )}
 
+        {/* SORTING */}
+        {problem.type === 'sorting' && problem.options && (
+          <SortingInteraction
+            items={problem.options}
+            isSubmitted={isSubmitted}
+            correctOrderIds={problem.solution.answer as string[]}
+            onOrderChange={setCurrentSortingOrder}
+          />
+        )}
+
         {/* GENERIC FALLBACK */}
-        {problem.type !== 'multiple-choice' && problem.type !== 'numerical' && (
+        {problem.type !== 'multiple-choice' && problem.type !== 'numerical' && problem.type !== 'sorting' && (
           <div className="p-8 text-center text-gray-500 bg-gray-50 rounded-xl">
             Interactive component placeholder for type: {problem.type}
           </div>
@@ -321,6 +345,9 @@ const InteractiveProblem = () => {
           <h2 className="text-2xl font-black text-gray-900 mb-2">Problem Solved!</h2>
           <p className="text-gray-600 mb-6">You earned <span className="font-bold text-yellow-600">+{problem.xpReward} XP</span></p>
           <div className="flex gap-3 justify-center">
+            <Button variant="outline" onClick={handleShare}>
+              Share 🔗
+            </Button>
             <Button variant="outline" onClick={() => navigate('/dashboard')}>
               View Stats
             </Button>
@@ -330,6 +357,15 @@ const InteractiveProblem = () => {
           </div>
         </div>
       </Modal>
+
+      <AiTutor
+        problemContext={{
+          title: problem.title,
+          description: problem.description,
+          category: problem.category,
+          topic: (problem as any).topic
+        }}
+      />
     </PageTransition>
   );
 };

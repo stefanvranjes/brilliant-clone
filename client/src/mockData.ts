@@ -171,6 +171,68 @@ export const MOCK_PROBLEMS: any[] = [
       explanation: 'The point P is located at x=3 and y=4.'
     },
     moduleId: 'math-fundamentals'
+  },
+  {
+    id: 'cs-2',
+    title: 'Algorithm Steps',
+    description: 'Order the steps of a typical Binary Search algorithm correctly.',
+    difficulty: 'intermediate',
+    type: 'sorting',
+    category: 'Computer Science',
+    tags: ['algorithms', 'binary-search'],
+    options: [
+      { id: 'step-1', content: 'Calculate the middle index' },
+      { id: 'step-2', content: 'Compare middle element with target' },
+      { id: 'step-3', content: 'If target matches middle, return index' },
+      { id: 'step-4', content: 'If target is smaller, search left half' },
+      { id: 'step-5', content: 'If target is larger, search right half' }
+    ],
+    hints: createHints([
+      'You start by finding the midpoint.',
+      'Comparison happens after you have the middle element.'
+    ]),
+    xpReward: 200,
+    estimatedTime: 6,
+    solution: {
+      answer: ['step-1', 'step-2', 'step-3', 'step-4', 'step-5'],
+      explanation: 'Binary search starts by finding the middle, comparing it, and then narrowing the range.'
+    },
+    moduleId: 'cs-foundations'
+  },
+  {
+    id: 'logic-2',
+    title: 'Half Adder Logic',
+    description: 'A Half Adder circuit computes the sum of two binary digits. Explore the circuit and verify the outputs.',
+    difficulty: 'advanced',
+    type: 'logic-circuit',
+    category: 'Computer Science',
+    tags: ['digital-logic', 'hardware'],
+    visualizationId: 'logic-circuit-sim',
+    visualizationConfig: {
+      inputs: [
+        { id: 'in-a', label: 'Input A', initialValue: false },
+        { id: 'in-b', label: 'Input B', initialValue: false }
+      ],
+      gates: [
+        { id: 'xor-1', type: 'XOR', inputA: 'in-a', inputB: 'in-b', label: 'Sum Gate' },
+        { id: 'and-1', type: 'AND', inputA: 'in-a', inputB: 'in-b', label: 'Carry Gate' }
+      ],
+      outputs: [
+        { id: 'out-sum', label: 'Sum (S)', source: 'xor-1' },
+        { id: 'out-carry', label: 'Carry (C)', source: 'and-1' }
+      ]
+    },
+    hints: createHints([
+      'A + B in binary results in a Sum and a Carry.',
+      '1 + 1 = 10 (Sum 0, Carry 1).'
+    ]),
+    xpReward: 250,
+    estimatedTime: 8,
+    solution: {
+      answer: 'Interactive',
+      explanation: 'The XOR gate produces the Sum bit, while the AND gate produces the Carry bit.'
+    },
+    moduleId: 'cs-foundations'
   }
 ];
 
@@ -181,6 +243,14 @@ export const MOCK_CHAPTERS: Chapter[] = [
     description: 'Explore the beauty of numbers.',
     order: 1,
     problems: ['math-1', 'math-2'],
+    isLocked: false
+  },
+  {
+    id: 'cs-ch-1',
+    title: 'Computer Science Basics',
+    description: 'Learn about binary and algorithms.',
+    order: 1,
+    problems: ['cs-1', 'cs-2', 'logic-2'],
     isLocked: false
   }
 ];
@@ -195,6 +265,16 @@ export const MOCK_COURSES: Course[] = [
     chapters: MOCK_CHAPTERS,
     estimatedHours: 2,
     enrollmentCount: 1500
+  },
+  {
+    id: 'cs-foundations',
+    title: 'Computer Science Foundations',
+    description: 'Explore the building blocks of computing.',
+    category: 'Computer Science',
+    difficulty: 'beginner',
+    chapters: [MOCK_CHAPTERS[1]],
+    estimatedHours: 4,
+    enrollmentCount: 1200
   }
 ];
 

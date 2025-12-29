@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
+import { Link } from 'react-router-dom';
 import communityService, { LeaderboardUser } from '../services/community.service';
 import { PageTransition } from '../components/ui/PageTransition';
 import { LoadingSpinner } from '../components/ui/LoadingSpinner';
@@ -68,7 +69,7 @@ const Leaderboard: React.FC = () => {
                                         </div>
                                     </td>
                                     <td className="px-8 py-6">
-                                        <div className="flex items-center gap-4">
+                                        <Link to={`/profile/${user._id}`} className="flex items-center gap-4 hover:opacity-80 transition-opacity">
                                             <div className="w-10 h-10 rounded-xl bg-gray-100 border-2 border-white shadow-inner flex-shrink-0 flex items-center justify-center overflow-hidden">
                                                 {user.avatar ? (
                                                     <img src={user.avatar} alt={user.username} className="w-full h-full object-cover" />
@@ -80,7 +81,7 @@ const Leaderboard: React.FC = () => {
                                                 <div className="font-bold text-gray-900 text-base">{user.displayName || user.username}</div>
                                                 <div className="text-xs font-bold text-gray-400 uppercase tracking-wider">@{user.username}</div>
                                             </div>
-                                        </div>
+                                        </Link>
                                     </td>
                                     <td className="px-8 py-6">
                                         <div className="flex items-center gap-1.5">

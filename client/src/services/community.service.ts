@@ -26,6 +26,12 @@ export interface LeaderboardUser {
     level: number;
 }
 
+export interface PublicProfile extends LeaderboardUser {
+    longestStreak: number;
+    problemsSolved: number;
+    createdAt: string;
+}
+
 const communityService = {
     // Comments
     getComments: async (problemId: string): Promise<Comment[]> => {
@@ -46,6 +52,11 @@ const communityService = {
     // Leaderboard
     getLeaderboard: async (): Promise<LeaderboardUser[]> => {
         const response = await api.get('/users/leaderboard');
+        return response.data;
+    },
+
+    getPublicProfile: async (userId: string): Promise<PublicProfile> => {
+        const response = await api.get(`/users/profile/${userId}`);
         return response.data;
     }
 };

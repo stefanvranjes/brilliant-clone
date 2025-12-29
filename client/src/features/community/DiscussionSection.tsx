@@ -15,6 +15,7 @@ const DiscussionSection: React.FC<DiscussionSectionProps> = ({ problemId }) => {
     const [loading, setLoading] = useState(true);
     const [newComment, setNewComment] = useState('');
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [sortBy, setSortBy] = useState<'newest' | 'top'>('newest');
 
     useEffect(() => {
         const fetchComments = async () => {
@@ -57,15 +58,36 @@ const DiscussionSection: React.FC<DiscussionSectionProps> = ({ problemId }) => {
         }
     };
 
+    const sortedComments = [...comments].sort((a, b) => {
+        if (sortBy === 'top') return b.likes.length - a.likes.length;
+        return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+    });
+
     if (loading) return <LoadingSpinner />;
 
     return (
         <div className="mt-16 pt-12 border-t border-gray-100">
             <div className="flex items-center justify-between mb-8">
                 <h3 className="text-2xl font-black text-gray-900">Discussion</h3>
-                <span className="bg-gray-100 text-gray-500 px-3 py-1 rounded-full text-sm font-bold">
-                    {comments.length} Comments
-                </span>
+                <div className="flex items-center gap-4">
+                    <div className="flex bg-gray-100 p-1 rounded-xl">
+                        <button
+                            onClick={() => setSortBy('top')}
+                            className={`px-3 py-1.5 rounded-lg text-xs font-black transition-all ${sortBy === 'top' ? 'bg-white text-black shadow-sm' : 'text-gray-400 hover:text-gray-600'}`}
+                        >
+                            TOP
+                        </button>
+                        <button
+                            onClick={() => setSortBy('newest')}
+                            className={`px-3 py-1.5 rounded-lg text-xs font-black transition-all ${sortBy === 'newest' ? 'bg-white text-black shadow-sm' : 'text-gray-400 hover:text-gray-600'}`}
+                        >
+                            NEWEST
+                        </button>
+                    </div>
+                    <span className="bg-gray-100 text-gray-500 px-3 py-1 rounded-full text-sm font-bold">
+                        {comments.length} Comments
+                    </span>
+                </div>
             </div>
 
             {/* Post Comment */}
@@ -102,7 +124,7 @@ const DiscussionSection: React.FC<DiscussionSectionProps> = ({ problemId }) => {
             {/* Comment List */}
             <div className="space-y-6">
                 <AnimatePresence>
-                    {comments.map((comment) => (
+                    {sortedComments.map((comment) => (
                         <motion.div
                             key={comment._id}
                             initial={{ opacity: 0, y: 20 }}
