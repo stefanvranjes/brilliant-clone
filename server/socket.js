@@ -36,6 +36,37 @@ export const initSocket = (server) => {
             });
         });
 
+        // Duel Handlers
+        socket.on('duel-invite', (data) => {
+            const { targetUserId, inviter } = data;
+            // In a real app, find the socket of targetUserId. 
+            // For now, broadcast to all for testing or use a simple mapping.
+            socket.broadcast.emit('duel-invitation', {
+                inviter,
+                duelId: `duel_${Math.random().toString(36).substr(2, 9)}`
+            });
+        });
+
+        socket.on('duel-join', (data) => {
+            const { duelId, user } = data;
+            socket.join(duelId);
+            io.to(duelId).emit('duel-player-joined', { user });
+        });
+
+        socket.on('duel-progress', (data) => {
+            const { duelId, user, score, progress } = data;
+            io.to(duelId).emit('duel-update', {
+                user,
+                score,
+                progress
+            });
+        });
+
+        socket.on('duel-finish', (data) => {
+            const { duelId, user, score } = data;
+            io.to(duelId).emit('duel-player-finished', { user, score });
+        });
+
         socket.on('disconnect', () => {
             console.log('User disconnected:', socket.id);
         });

@@ -23,6 +23,7 @@ import Login from './pages/auth/Login';
 import Register from './pages/auth/Register';
 import { XpShop } from './features/shop/XpShop';
 import { SkillForest } from './features/visualization/SkillForest';
+import { LearningDuels } from './features/community/LearningDuels';
 
 // Simple Landing/Home Component to list modules
 const Home = () => {
@@ -185,6 +186,7 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
               <Link to="/" className="text-sm font-bold text-gray-500 hover:text-black transition-colors">Explore</Link>
               <Link to="/dashboard" className="text-sm font-bold text-gray-500 hover:text-black transition-colors">My Progress</Link>
               <Link to="/leaderboard" className="text-sm font-bold text-gray-500 hover:text-black transition-colors">Leaderboard</Link>
+              <Link to="/duels" className="text-sm font-bold text-gray-500 hover:text-black transition-colors">Duels ⚔️</Link>
               <Link to="/shop" className="text-sm font-bold text-gray-500 hover:text-black transition-colors">XP Shop</Link>
               <Link to="/study-room/general" className="text-sm font-bold text-gray-500 hover:text-black transition-colors">Study Rooms</Link>
             </div>
@@ -235,6 +237,7 @@ const AnimatedRoutes = () => {
         <Route path="/admin/problems/edit/:id" element={<ProblemEditor />} />
         <Route path="/admin/courses" element={<CourseManager />} />
         <Route path="/study-room/:roomId" element={<StudyRoom />} />
+        <Route path="/duels" element={<LearningDuels />} />
         <Route path="/shop" element={<XpShop />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />

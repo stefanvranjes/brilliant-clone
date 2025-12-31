@@ -1,7 +1,8 @@
-import React, { useMemo } from 'react';
-import { motion } from 'framer-motion';
+import React, { useMemo, useState, useEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import { Course } from '../../mockData';
+import { aiService, AiRecommendation } from '../../services/ai.service';
 
 interface Node {
     id: string;
@@ -16,6 +17,17 @@ interface SkillForestProps {
 }
 
 export const SkillForest: React.FC<SkillForestProps> = ({ courses, completedCourseIds }) => {
+    const [recommendations, setRecommendations] = useState<AiRecommendation[]>([]);
+    const [hoveredNode, setHoveredNode] = useState<string | null>(null);
+
+    useEffect(() => {
+        const fetchRecommendations = async () => {
+            const data = await aiService.getRecommendations();
+            setRecommendations(data);
+        };
+        fetchRecommendations();
+    }, []);
+
     // Basic layout algorithm: Group by "depth" in the prerequisite tree
     const graphData = useMemo(() => {
         const nodes: Node[] = [];
@@ -115,6 +127,8 @@ export const SkillForest: React.FC<SkillForestProps> = ({ courses, completedCour
                 {graphData.map((node) => {
                     const isCompleted = completedCourseIds.includes(node.id);
                     const isLocked = node.course.prerequisites?.some(preId => !completedCourseIds.includes(preId));
+                    const recommendation = recommendations.find(r => r.courseId === node.id);
+                    const isHovered = hoveredNode === node.id;
 
                     return (
                         <motion.div
@@ -122,6 +136,8 @@ export const SkillForest: React.FC<SkillForestProps> = ({ courses, completedCour
                             initial={{ scale: 0 }}
                             animate={{ scale: 1 }}
                             whileHover={{ scale: 1.05 }}
+                            onMouseEnter={() => setHoveredNode(node.id)}
+                            onMouseLeave={() => setHoveredNode(null)}
                             style={{
                                 position: 'absolute',
                                 left: node.x - 80,
@@ -129,22 +145,63 @@ export const SkillForest: React.FC<SkillForestProps> = ({ courses, completedCour
                                 width: '160px'
                             }}
                         >
+                            {/* AI Glow Effect */}
+                            {recommendation && !isCompleted && !isLocked && (
+                                <motion.div
+                                    animate={{
+                                        scale: [1, 1.1, 1],
+                                        opacity: [0.3, 0.6, 0.3]
+                                    }}
+                                    transition={{ duration: 2, repeat: Infinity }}
+                                    className="absolute inset-0 bg-yellow-400 rounded-2xl blur-xl -z-10"
+                                />
+                            )}
+
                             <Link
                                 to={isLocked ? '#' : `/module/${node.id}`}
-                                className={`block p-4 rounded-2xl border-4 text-center transition-all shadow-lg ${isCompleted
+                                className={`block p-4 rounded-2xl border-4 text-center transition-all shadow-lg relative ${isCompleted
                                         ? 'bg-blue-600 border-blue-400 text-white'
                                         : isLocked
                                             ? 'bg-gray-100 border-gray-200 text-gray-400 cursor-not-allowed grayscale'
-                                            : 'bg-white border-blue-100 text-gray-900 hover:border-blue-500'
+                                            : recommendation
+                                                ? 'bg-white border-yellow-400 text-gray-900 shadow-yellow-100'
+                                                : 'bg-white border-blue-100 text-gray-900 hover:border-blue-500'
                                     }`}
                             >
                                 <div className="text-2xl mb-1">
-                                    {isCompleted ? '✓' : isLocked ? '🔒' : '⭐'}
+                                    {isCompleted ? '✓' : isLocked ? '🔒' : recommendation ? '✨' : '⭐'}
                                 </div>
                                 <div className="text-sm font-black leading-tight">
                                     {node.course.title}
                                 </div>
+                                {recommendation && !isCompleted && !isLocked && (
+                                    <div className="absolute -top-2 -right-2 bg-yellow-400 text-[10px] font-black px-2 py-0.5 rounded-full text-yellow-900 uppercase tracking-tighter">
+                                        Top Pick
+                                    </div>
+                                )}
                             </Link>
+
+                            {/* AI Tooltip */}
+                            <AnimatePresence>
+                                {isHovered && recommendation && !isCompleted && !isLocked && (
+                                    <motion.div
+                                        initial={{ opacity: 0, y: 10 }}
+                                        animate={{ opacity: 1, y: 0 }}
+                                        exit={{ opacity: 0, y: 10 }}
+                                        className="absolute top-full mt-4 left-1/2 -translate-x-1/2 w-64 z-50 pointer-events-none"
+                                    >
+                                        <div className="bg-gray-900 text-white p-4 rounded-2xl shadow-2xl relative">
+                                            <div className="text-xs font-black text-yellow-400 uppercase tracking-widest mb-2 flex items-center gap-1">
+                                                <span>🤖</span> AI RECOMMENDATION
+                                            </div>
+                                            <p className="text-xs font-medium leading-relaxed opacity-90">
+                                                {recommendation.reason}
+                                            </p>
+                                            <div className="absolute -top-2 left-1/2 -translate-x-1/2 border-8 border-transparent border-b-gray-900" />
+                                        </div>
+                                    </motion.div>
+                                )}
+                            </AnimatePresence>
                         </motion.div>
                     );
                 })}

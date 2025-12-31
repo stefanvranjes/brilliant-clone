@@ -7,6 +7,7 @@ import { PageTransition } from '../../components/ui/PageTransition';
 import { AchievementCard } from '../../components/ui/AchievementCard';
 import { apiService } from '../../services/api.service';
 import { Achievement } from '../../mockData';
+import { aiService, AiSummary } from '../../services/ai.service';
 
 const StatCard = ({ label, value, icon, color, delay }: any) => (
   <motion.div
@@ -27,6 +28,8 @@ const ProgressDashboard = () => {
   const { progress, loading: progressLoading, error: progressError } = useProgress();
   const [achievements, setAchievements] = React.useState<Achievement[]>([]);
   const [loadingAchievements, setLoadingAchievements] = React.useState(true);
+  const [aiSummary, setAiSummary] = React.useState<AiSummary | null>(null);
+  const [loadingAi, setLoadingAi] = React.useState(true);
 
   React.useEffect(() => {
     const fetchAchievements = async () => {
@@ -39,7 +42,20 @@ const ProgressDashboard = () => {
         setLoadingAchievements(false);
       }
     };
+
+    const fetchAiSummary = async () => {
+      try {
+        const data = await aiService.getSummary();
+        setAiSummary(data);
+      } catch (err) {
+        console.error('Failed to fetch AI summary', err);
+      } finally {
+        setLoadingAi(false);
+      }
+    };
+
     fetchAchievements();
+    fetchAiSummary();
   }, []);
 
   if (progressLoading || loadingAchievements) return <LoadingSpinner />;
@@ -84,18 +100,70 @@ const ProgressDashboard = () => {
       </div>
 
       {/* Weekly Activity Chart */}
-      <motion.div
-        initial={{ opacity: 0, scale: 0.95 }}
-        animate={{ opacity: 1, scale: 1 }}
-        transition={{ delay: 0.5 }}
-        className="bg-white p-8 rounded-2xl border border-gray-200 shadow-sm"
-      >
-        <div className="flex justify-between items-end mb-6">
-          <h3 className="text-xl font-bold text-gray-900">Weekly Activity</h3>
-          <span className="text-sm text-gray-500 font-medium">Last 7 Days</span>
-        </div>
-        <ActivityChart />
-      </motion.div>
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-16">
+        <motion.div
+          initial={{ opacity: 0, x: -20 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ delay: 0.5 }}
+          className="lg:col-span-2 bg-white p-8 rounded-2xl border border-gray-200 shadow-sm"
+        >
+          <div className="flex justify-between items-end mb-6">
+            <h3 className="text-xl font-bold text-gray-900">Weekly Activity</h3>
+            <span className="text-sm text-gray-500 font-medium">Last 7 Days</span>
+          </div>
+          <ActivityChart />
+        </motion.div>
+
+        {/* AI Coach Card */}
+        <motion.div
+          initial={{ opacity: 0, x: 20 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ delay: 0.6 }}
+          className="bg-gray-900 text-white p-8 rounded-2xl shadow-xl relative overflow-hidden"
+        >
+          <div className="absolute top-0 right-0 p-4 opacity-10 text-6xl">🤖</div>
+          <div className="relative z-10">
+            <h3 className="text-xl font-black mb-6 flex items-center gap-2">
+              <span className="text-yellow-400">✨</span> AI Coach
+            </h3>
+
+            {loadingAi ? (
+              <div className="animate-pulse space-y-4">
+                <div className="h-4 bg-gray-700 rounded w-3/4"></div>
+                <div className="h-4 bg-gray-700 rounded w-1/2"></div>
+              </div>
+            ) : aiSummary ? (
+              <div className="space-y-6">
+                <div>
+                  <div className="text-[10px] font-black uppercase tracking-widest text-yellow-500 mb-2">Strengths</div>
+                  <div className="flex flex-wrap gap-2">
+                    {aiSummary.strengths.map(s => (
+                      <span key={s} className="bg-white/10 px-2 py-1 rounded text-[10px] font-bold">{s}</span>
+                    ))}
+                  </div>
+                </div>
+
+                <div>
+                  <div className="text-[10px] font-black uppercase tracking-widest text-red-400 mb-2">Focus Areas</div>
+                  <div className="flex flex-wrap gap-2">
+                    {aiSummary.weaknesses.map(w => (
+                      <span key={w} className="bg-white/10 px-2 py-1 rounded text-[10px] font-bold">{w}</span>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="pt-4 border-t border-white/10">
+                  <p className="text-sm font-medium leading-relaxed opacity-80 italic">
+                    "{aiSummary.overallAdvice}"
+                  </p>
+                </div>
+              </div>
+            ) : (
+              <p className="text-gray-400 text-sm">Failed to load AI insights.</p>
+            )}
+          </div>
+        </motion.div>
+      </div>
 
       {/* Achievements Section */}
       <div className="mt-16 mb-12">
