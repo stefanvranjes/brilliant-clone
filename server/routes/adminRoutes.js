@@ -1,7 +1,7 @@
 import express from 'express';
 import Problem from '../models/Problem.js';
 import Course from '../models/Course.js';
-import Chapter from '../models/Chapter.js';
+// import Chapter from '../models/Chapter.js';
 import { protect, authorize } from '../middleware/authMiddleware.js';
 
 const router = express.Router();
@@ -80,6 +80,7 @@ router.put('/courses/:id', async (req, res, next) => {
 
 // --- CHAPTERS ---
 
+/*
 // @desc    Create a chapter for a course
 // @route   POST /api/admin/courses/:courseId/chapters
 router.post('/courses/:courseId/chapters', async (req, res, next) => {
@@ -96,5 +97,6 @@ router.post('/courses/:courseId/chapters', async (req, res, next) => {
         next(error);
     }
 });
+*/
 
 export default router;

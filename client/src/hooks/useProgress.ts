@@ -5,6 +5,7 @@ import { useAuth } from '../context/AuthContext';
 // Sync this interface with the one in mockData/apiService to avoid confusion
 interface UserProgress {
   totalXP: number;
+  xpBalance: number;
   level: number;
   currentStreak: number;
   longestStreak: number;
@@ -13,6 +14,7 @@ interface UserProgress {
   lastActiveDate: string;
   dailyChallengeCompleted: boolean;
   unlockedAchievementIds: string[];
+  purchasedItemIds: string[];
 }
 
 export const useProgress = () => {
@@ -53,5 +55,17 @@ export const useProgress = () => {
     }
   };
 
-  return { progress, loading, error, updateProgress };
+  const purchaseItem = async (itemId: string) => {
+    if (!progress || !user) return;
+    try {
+      const updatedData = await apiService.purchaseItem(itemId);
+      setProgress(updatedData);
+      return updatedData;
+    } catch (err) {
+      console.error('Purchase failed', err);
+      throw err;
+    }
+  };
+
+  return { progress, loading, error, updateProgress, purchaseItem, fetchProgress };
 };

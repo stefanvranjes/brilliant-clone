@@ -44,6 +44,7 @@ export const solveProblem = async (req, res, next) => {
     // For now, allow re-solving but maybe limit XP
 
     user.totalXP += problem.xpReward;
+    user.xpBalance += problem.xpReward; // Also update spendable balance
     user.problemsSolved += 1;
     user.timeSpent += timeSpent || 0; // Add minutes
 
@@ -116,6 +117,51 @@ export const getPublicProfile = async (req, res, next) => {
     }
 
     res.status(200).json(user);
+  } catch (error) {
+    next(error);
+  }
+};
+
+// @desc    Purchase shop item
+// @route   POST /api/users/purchase
+// @access  Private
+export const purchaseItem = async (req, res, next) => {
+  try {
+    const { itemId } = req.body;
+    const user = await User.findById(req.user.id);
+
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    // Usually we would fetch the item from a ShopItem model to get the price
+    // For this prototype, we'll use a simple mock price logic or assume the frontend validated it
+    // Better: define the prices here too or shared
+    const prices = {
+      'streak-freeze': 500,
+      'theme-cyberpunk': 1500,
+      'theme-forest': 1000
+    };
+
+    const price = prices[itemId] || 0;
+
+    if (user.xpBalance < price) {
+      return res.status(400).json({ message: 'Insufficient XP balance' });
+    }
+
+    if (user.purchasedItemIds.includes(itemId)) {
+      return res.status(400).json({ message: 'Item already purchased' });
+    }
+
+    user.xpBalance -= price;
+    user.purchasedItemIds.push(itemId);
+
+    await user.save();
+
+    const userData = user.toObject();
+    userData.unlockedAchievementIds = user.achievements ? user.achievements.map(a => a.id) : [];
+
+    res.status(200).json(userData);
   } catch (error) {
     next(error);
   }

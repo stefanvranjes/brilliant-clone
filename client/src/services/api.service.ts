@@ -2,6 +2,7 @@ import {
   Problem,
   UserProgress,
   Achievement,
+  ShopItem,
   INITIAL_USER_PROGRESS
 } from '../mockData';
 
@@ -50,13 +51,11 @@ export const apiService = {
   },
 
   getModuleById: async (id: string): Promise<any> => {
-    // We try to find by ID first, the backend route expects mongo ID
     const response = await fetch(`${API_URL}/courses/${id}`);
     return handleResponse(response);
   },
 
   getProblemsByModule: async (moduleId: string): Promise<Problem[]> => {
-    // Now we can fetch the course and it will have populated problems
     const course = await apiService.getModuleById(moduleId);
     return course.chapters.flatMap((ch: any) => ch.problems);
   },
@@ -67,8 +66,8 @@ export const apiService = {
   },
 
   getAllAchievements: async (): Promise<Achievement[]> => {
-    const response = await fetch(`${API_URL}/achievements`); // Assuming I'll add this route too
-    return handleResponse(response).catch(() => []); // Fallback to empty if not implemented
+    const response = await fetch(`${API_URL}/achievements`);
+    return handleResponse(response).catch(() => []);
   },
 
   getUserProgress: async (): Promise<UserProgress> => {
@@ -79,7 +78,6 @@ export const apiService = {
   },
 
   updateProgress: async (updates: Partial<UserProgress>): Promise<UserProgress> => {
-    // If it's a problem solve update, we use a specific endpoint
     if (updates.problemsSolved && (updates as any).lastProblemId) {
       const response = await fetch(`${API_URL}/users/solve`, {
         method: 'POST',
@@ -92,7 +90,6 @@ export const apiService = {
       return handleResponse(response);
     }
 
-    // Otherwise use generic update
     const response = await fetch(`${API_URL}/users/profile`, {
       method: 'PUT',
       headers: getHeaders(),
@@ -110,7 +107,6 @@ export const apiService = {
     return handleResponse(response);
   },
 
-  // Auth Methods
   login: async (credentials: any): Promise<any> => {
     const response = await fetch(`${API_URL}/auth/login`, {
       method: 'POST',
@@ -151,7 +147,6 @@ export const apiService = {
     return handleResponse(response);
   },
 
-  // Generic methods
   get: async (endpoint: string): Promise<any> => {
     const response = await fetch(`${API_URL}${endpoint}`, {
       headers: getHeaders()
@@ -168,7 +163,6 @@ export const apiService = {
     return handleResponse(response);
   },
 
-  // Admin Methods
   createProblem: async (problemData: any): Promise<Problem> => {
     return apiService.post('/admin/problems', problemData);
   },
@@ -205,5 +199,20 @@ export const apiService = {
 
   createChapter: async (courseId: string, chapterData: any): Promise<any> => {
     return apiService.post(`/admin/courses/${courseId}/chapters`, chapterData);
+  },
+
+  // Shop Methods
+  getShopItems: async (): Promise<ShopItem[]> => {
+    try {
+      const response = await fetch(`${API_URL}/shop/items`);
+      return handleResponse(response);
+    } catch {
+      const { MOCK_SHOP_ITEMS } = await import('../mockData');
+      return MOCK_SHOP_ITEMS;
+    }
+  },
+
+  purchaseItem: async (itemId: string): Promise<UserProgress> => {
+    return apiService.post('/users/purchase', { itemId });
   }
 };

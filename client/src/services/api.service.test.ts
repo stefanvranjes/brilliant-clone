@@ -25,7 +25,7 @@ describe('API Service (Logic Tests)', () => {
   });
 
   test('should initialize default user if storage is empty', async () => {
-    const user = await apiService.getUserProgress('test-user');
+    const user = await apiService.getUserProgress();
     expect(user.level).toBe(5); // Default mock level
     expect(user.totalXP).toBe(1250);
   });
@@ -36,8 +36,8 @@ describe('API Service (Logic Tests)', () => {
     window.localStorage.setItem('brilliant_clone_user', JSON.stringify(initialUser));
 
     // Add 200 XP -> 1100 XP (Should be Level 2)
-    const updated = await apiService.updateProgress('test-user', { totalXP: 200 });
-    
+    const updated = await apiService.updateProgress({ totalXP: 200 });
+
     expect(updated.totalXP).toBe(1100);
     expect(updated.level).toBe(2); // Math.floor(1100 / 1000) + 1
   });
@@ -48,15 +48,15 @@ describe('API Service (Logic Tests)', () => {
     jest.setSystemTime(today);
 
     // Setup user active "Yesterday"
-    const yesterdayUser = { 
-      ...MOCK_USER, 
-      currentStreak: 5, 
-      lastActiveDate: '2023-10-14' 
+    const yesterdayUser = {
+      ...MOCK_USER,
+      currentStreak: 5,
+      lastActiveDate: '2023-10-14'
     };
     window.localStorage.setItem('brilliant_clone_user', JSON.stringify(yesterdayUser));
 
-    const updated = await apiService.updateProgress('test-user', { problemsSolved: 1 });
-    
+    const updated = await apiService.updateProgress({ problemsSolved: 1 });
+
     expect(updated.currentStreak).toBe(6);
     expect(updated.lastActiveDate).toBe('2023-10-15');
   });
@@ -67,15 +67,15 @@ describe('API Service (Logic Tests)', () => {
     jest.setSystemTime(today);
 
     // Setup user active 2 days ago
-    const oldUser = { 
-      ...MOCK_USER, 
-      currentStreak: 10, 
-      lastActiveDate: '2023-10-13' 
+    const oldUser = {
+      ...MOCK_USER,
+      currentStreak: 10,
+      lastActiveDate: '2023-10-13'
     };
     window.localStorage.setItem('brilliant_clone_user', JSON.stringify(oldUser));
 
-    const updated = await apiService.updateProgress('test-user', { problemsSolved: 1 });
-    
+    const updated = await apiService.updateProgress({ problemsSolved: 1 });
+
     expect(updated.currentStreak).toBe(1); // Reset
   });
 
@@ -85,15 +85,15 @@ describe('API Service (Logic Tests)', () => {
     jest.setSystemTime(today);
 
     // Setup user active "Today" already
-    const sameDayUser = { 
-      ...MOCK_USER, 
-      currentStreak: 5, 
-      lastActiveDate: '2023-10-15' 
+    const sameDayUser = {
+      ...MOCK_USER,
+      currentStreak: 5,
+      lastActiveDate: '2023-10-15'
     };
     window.localStorage.setItem('brilliant_clone_user', JSON.stringify(sameDayUser));
 
-    const updated = await apiService.updateProgress('test-user', { problemsSolved: 1 });
-    
+    const updated = await apiService.updateProgress({ problemsSolved: 1 });
+
     expect(updated.currentStreak).toBe(5); // Unchanged
   });
 });

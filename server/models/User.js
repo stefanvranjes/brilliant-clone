@@ -81,6 +81,11 @@ const userSchema = new mongoose.Schema({
     id: String,
     unlockedAt: { type: Date, default: Date.now }
   }],
+  xpBalance: {
+    type: Number,
+    default: 0
+  },
+  purchasedItemIds: [String],
   role: {
     type: String,
     enum: ['user', 'admin', 'editor'],

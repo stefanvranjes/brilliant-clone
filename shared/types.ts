@@ -65,6 +65,7 @@ export interface Course {
   chapters: Chapter[];
   estimatedHours: number;
   enrollmentCount: number;
+  prerequisites?: string[]; // Array of Course IDs
 }
 
 export interface Chapter {
@@ -90,10 +91,22 @@ export interface Achievement {
 export interface UserStats {
   userId: string;
   totalXP: number;
+  xpBalance: number; // Spendable XP
   currentStreak: number;
   longestStreak: number;
   problemsSolved: number;
   timeSpent: number;
   achievements: Achievement[];
   level: number;
+  purchasedItemIds: string[];
+}
+
+export interface ShopItem {
+  id: string;
+  title: string;
+  description: string;
+  price: number;
+  icon: string;
+  type: 'streak-freeze' | 'theme' | 'power-up';
+  config?: any; // For theme colors, etc.
 }

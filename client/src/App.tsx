@@ -19,6 +19,10 @@ import ProblemList from './pages/admin/ProblemList';
 import ProblemEditor from './pages/admin/ProblemEditor';
 import CourseManager from './pages/admin/CourseManager';
 import { StudyRoom } from './features/community/StudyRoom';
+import Login from './pages/auth/Login';
+import Register from './pages/auth/Register';
+import { XpShop } from './features/shop/XpShop';
+import { SkillForest } from './features/visualization/SkillForest';
 
 // Simple Landing/Home Component to list modules
 const Home = () => {
@@ -29,6 +33,7 @@ const Home = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState<any[]>([]);
   const [isSearching, setIsSearching] = useState(false);
+  const [viewMode, setViewMode] = useState<'grid' | 'forest'>('grid');
 
   useEffect(() => {
     const performSearch = async () => {
@@ -80,6 +85,21 @@ const Home = () => {
         </Link>
       </div>
 
+      <div className="flex gap-4 mb-8">
+        <button
+          onClick={() => setViewMode('grid')}
+          className={`px-4 py-2 rounded-lg font-bold transition-all ${viewMode === 'grid' ? 'bg-black text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}
+        >
+          Grid View
+        </button>
+        <button
+          onClick={() => setViewMode('forest')}
+          className={`px-4 py-2 rounded-lg font-bold transition-all ${viewMode === 'forest' ? 'bg-black text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}
+        >
+          Skill Forest ✨
+        </button>
+      </div>
+
       <div className="mb-12">
         <div className="relative group max-w-2xl">
           <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-gray-400 group-focus-within:text-black transition-colors">
@@ -121,29 +141,33 @@ const Home = () => {
         ))}
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-        {filteredModules.length > 0 ? (
-          filteredModules.map((module) => (
-            <ModuleCard key={module.id} module={module} />
-          ))
-        ) : (
-          <div className="col-span-full text-center py-20 bg-gray-50 rounded-3xl border-2 border-dashed border-gray-200">
-            <p className="text-gray-500 font-bold text-lg">No courses found in this category.</p>
-            <button
-              onClick={() => setSelectedCategory('All')}
-              className="mt-4 text-blue-600 font-black hover:underline"
-            >
-              Clear filters
-            </button>
-          </div>
-        )}
-      </div>
+      {viewMode === 'grid' ? (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+          {filteredModules.length > 0 ? (
+            filteredModules.map((module) => (
+              <ModuleCard key={module.id} module={module} />
+            ))
+          ) : (
+            <div className="col-span-full text-center py-20 bg-gray-50 rounded-3xl border-2 border-dashed border-gray-200">
+              <p className="text-gray-500 font-bold text-lg">No courses found in this category.</p>
+              <button
+                onClick={() => setSelectedCategory('All')}
+                className="mt-4 text-blue-600 font-black hover:underline"
+              >
+                Clear filters
+              </button>
+            </div>
+          )}
+        </div>
+      ) : (
+        <SkillForest
+          courses={modules as any}
+          completedCourseIds={(progress as any).history?.map((h: any) => h.courseId) || []}
+        />
+      )}
     </PageTransition>
   );
 };
-
-import Login from './pages/auth/Login';
-import Register from './pages/auth/Register';
 
 const Layout = ({ children }: { children: React.ReactNode }) => {
   const { user, logout } = useAuth();
@@ -161,6 +185,7 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
               <Link to="/" className="text-sm font-bold text-gray-500 hover:text-black transition-colors">Explore</Link>
               <Link to="/dashboard" className="text-sm font-bold text-gray-500 hover:text-black transition-colors">My Progress</Link>
               <Link to="/leaderboard" className="text-sm font-bold text-gray-500 hover:text-black transition-colors">Leaderboard</Link>
+              <Link to="/shop" className="text-sm font-bold text-gray-500 hover:text-black transition-colors">XP Shop</Link>
               <Link to="/study-room/general" className="text-sm font-bold text-gray-500 hover:text-black transition-colors">Study Rooms</Link>
             </div>
             <div className="h-6 w-[1px] bg-gray-100 hidden md:block"></div>
@@ -210,6 +235,7 @@ const AnimatedRoutes = () => {
         <Route path="/admin/problems/edit/:id" element={<ProblemEditor />} />
         <Route path="/admin/courses" element={<CourseManager />} />
         <Route path="/study-room/:roomId" element={<StudyRoom />} />
+        <Route path="/shop" element={<XpShop />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
       </Routes>

@@ -4,11 +4,12 @@ import {
   Achievement,
   Course,
   Chapter,
-  Hint
+  Hint,
+  ShopItem
 } from '../../shared/types';
 
 // Shared types across the application
-export type { Problem, UserStats, Achievement, Course, Chapter };
+export type { Problem, UserStats, Achievement, Course, Chapter, ShopItem };
 
 export interface Module {
   id: string;
@@ -267,6 +268,17 @@ export const MOCK_COURSES: Course[] = [
     enrollmentCount: 1500
   },
   {
+    id: 'logic-modeling',
+    title: 'Logic & Modeling',
+    description: 'Learn to represent complex problems with logical statements.',
+    category: 'Logic',
+    difficulty: 'intermediate',
+    chapters: [MOCK_CHAPTERS[0]],
+    estimatedHours: 3,
+    enrollmentCount: 900,
+    prerequisites: ['math-fundamentals']
+  },
+  {
     id: 'cs-foundations',
     title: 'Computer Science Foundations',
     description: 'Explore the building blocks of computing.',
@@ -274,7 +286,48 @@ export const MOCK_COURSES: Course[] = [
     difficulty: 'beginner',
     chapters: [MOCK_CHAPTERS[1]],
     estimatedHours: 4,
-    enrollmentCount: 1200
+    enrollmentCount: 1200,
+    prerequisites: ['logic-modeling']
+  },
+  {
+    id: 'algorithms-1',
+    title: 'Algorithms I',
+    description: 'Fundamental sorting and searching techniques.',
+    category: 'Computer Science',
+    difficulty: 'intermediate',
+    chapters: [MOCK_CHAPTERS[1]],
+    estimatedHours: 5,
+    enrollmentCount: 800,
+    prerequisites: ['cs-foundations']
+  }
+];
+
+export const MOCK_SHOP_ITEMS: ShopItem[] = [
+  {
+    id: 'streak-freeze',
+    title: 'Streak Freeze',
+    description: 'Protects your streak for one day if you forget to learn.',
+    price: 500,
+    icon: '🧊',
+    type: 'streak-freeze'
+  },
+  {
+    id: 'theme-cyberpunk',
+    title: 'Cyberpunk Theme',
+    description: 'A neon-drenched futuristic look for your dashboard.',
+    price: 1500,
+    icon: '🌃',
+    type: 'theme',
+    config: { primary: '#f0f', secondary: '#0ff' }
+  },
+  {
+    id: 'theme-forest',
+    title: 'Evergreen Theme',
+    description: 'Calming greens and natural tones.',
+    price: 1000,
+    icon: '🌲',
+    type: 'theme',
+    config: { primary: '#2d5a27', secondary: '#8eb364' }
   }
 ];
 
@@ -305,12 +358,14 @@ export const MOCK_ACHIEVEMENTS: Achievement[] = [
 export const MOCK_USER_STATS: UserStats = {
   userId: 'user-123',
   totalXP: 1250,
+  xpBalance: 750, // Starting with some spendable XP
   level: 5,
   currentStreak: 3,
   longestStreak: 7,
   problemsSolved: 12,
-  timeSpent: 120, // in seconds or minutes? shared/types says timeSpent: number
+  timeSpent: 120,
   achievements: [],
+  purchasedItemIds: []
 };
 
 // For backward compatibility during migration
