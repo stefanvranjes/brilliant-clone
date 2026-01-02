@@ -21,6 +21,10 @@ const trackSchema = new mongoose.Schema({
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Course'
     }],
+    prerequisites: [{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Track'
+    }],
     difficulty: {
         type: String,
         enum: ['beginner', 'intermediate', 'advanced'],

@@ -1,5 +1,5 @@
 import React, { useState, useMemo, useEffect } from 'react';
-import { BrowserRouter as Router, Routes, Route, Link, useLocation } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from './context/AuthContext';
 import { AnimatePresence } from 'framer-motion';
 import ProgressDashboard from './features/dashboard/ProgressDashboard';
@@ -26,16 +26,19 @@ import { LearningDuels } from './features/community/LearningDuels';
 import { DailySprint } from './features/dashboard/DailySprint';
 import { LearningTrackCard } from './components/ui/LearningTrackCard';
 import { apiService } from './services/api.service';
+import { KnowledgeMap } from './features/visualization/KnowledgeMap';
 
 const Home = () => {
   const { modules, loading: modulesLoading, error: modulesError } = useModules();
   const { challenge, isCompleted, loading: challengeLoading } = useDailyChallenge();
   const { progress } = useProgress();
+  const navigate = useNavigate();
+
   const [selectedCategory, setSelectedCategory] = useState('All');
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState<any[]>([]);
   const [isSearching, setIsSearching] = useState(false);
-  const [viewMode, setViewMode] = useState<'grid' | 'forest'>('grid');
+  const [viewMode, setViewMode] = useState<'grid' | 'forest' | 'map'>('grid');
   const [tracks, setTracks] = useState<any[]>([]);
   const [loadingTracks, setLoadingTracks] = useState(true);
 
@@ -86,6 +89,24 @@ const Home = () => {
     return modules.filter((m: any) => m.category === selectedCategory);
   }, [modules, selectedCategory, searchResults, searchQuery]);
 
+  const mapData = useMemo(() => {
+    const nodes = modules.map((m: any) => ({
+      id: m.id,
+      title: m.title,
+      category: m.category,
+      status: ((progress as any)?.history?.some((h: any) => h.courseId === m.id) ? 'completed' : 'available') as 'completed' | 'available' | 'locked'
+    }));
+
+    const links: any[] = [];
+    modules.forEach((m: any, i: number) => {
+      if (i > 0 && m.category === modules[i - 1].category) {
+        links.push({ source: modules[i - 1].id, target: m.id });
+      }
+    });
+
+    return { nodes, links };
+  }, [modules, progress]);
+
   if (modulesLoading || challengeLoading) return <div className="p-8 text-center text-gray-500 font-medium">Loading...</div>;
   if (modulesError) return <div className="p-8 text-center text-red-500 font-medium">{modulesError}</div>;
 
@@ -108,13 +129,19 @@ const Home = () => {
           onClick={() => setViewMode('grid')}
           className={`px-4 py-2 rounded-lg font-bold transition-all ${viewMode === 'grid' ? 'bg-black text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}
         >
-          Grid View
+          Grid
         </button>
         <button
           onClick={() => setViewMode('forest')}
           className={`px-4 py-2 rounded-lg font-bold transition-all ${viewMode === 'forest' ? 'bg-black text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}
         >
           Skill Forest ✨
+        </button>
+        <button
+          onClick={() => setViewMode('map')}
+          className={`px-4 py-2 rounded-lg font-bold transition-all ${viewMode === 'map' ? 'bg-black text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}
+        >
+          Conceptual Map 🧠
         </button>
       </div>
 
@@ -181,7 +208,9 @@ const Home = () => {
         ))}
       </div>
 
-      {viewMode === 'grid' ? (
+      {viewMode === 'map' ? (
+        <KnowledgeMap data={mapData} onNodeClick={(id) => navigate(`/module/${id}`)} />
+      ) : viewMode === 'grid' ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {filteredModules.length > 0 ? (
             filteredModules.map((module) => (

@@ -14,6 +14,7 @@ import { useAuth } from '../../context/AuthContext';
 import { SortingInteraction } from './SortingInteraction';
 import { AiTutor } from '../ai-tutor/AiTutor';
 import { apiService } from '../../services/api.service';
+import { SYWEditor } from './SYWEditor';
 
 const InteractiveProblem = () => {
   const { problemId } = useParams<{ problemId: string }>();
@@ -113,6 +114,18 @@ const InteractiveProblem = () => {
         <h1 className="text-3xl font-black text-gray-900 mb-4">{problem.title}</h1>
         <div className="prose prose-lg text-gray-700">
           <p>{problem.description}</p>
+          {isSubmitted && isCorrect && (problem.category === 'Logic' || problem.category === 'Computer Science') && (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="mt-12"
+            >
+              <SYWEditor
+                problemId={problemId!}
+                onSubmit={(content) => apiService.submitSolution(problemId!, content)}
+              />
+            </motion.div>
+          )}
         </div>
       </div>
 

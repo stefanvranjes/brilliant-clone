@@ -247,5 +247,14 @@ export const apiService = {
   getTrackById: async (id: string): Promise<any> => {
     const response = await fetch(`${API_URL}/tracks/${id}`);
     return handleResponse(response);
+  },
+
+  submitSolution: async (problemId: string, content: string): Promise<any> => {
+    const response = await fetch(`${API_URL}/submissions`, {
+      method: 'POST',
+      headers: getHeaders(),
+      body: JSON.stringify({ problemId, content })
+    });
+    return handleResponse(response);
   }
 };

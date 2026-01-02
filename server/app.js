@@ -9,6 +9,8 @@ import authRoutes from './routes/authRoutes.js';
 import commentRoutes from './routes/commentRoutes.js';
 import adminRoutes from './routes/adminRoutes.js';
 import aiRoutes from './routes/aiRoutes.js';
+import submissionRoutes from './routes/submissionRoutes.js';
+import leagueRoutes from './routes/leagueRoutes.js';
 import { errorHandler } from './middleware/errorHandler.js';
 
 const app = express();
@@ -23,6 +25,8 @@ app.use('/api/users', userRoutes);
 app.use('/api/courses', courseRoutes);
 app.use('/api/achievements', achievementRoutes);
 app.use('/api/tracks', trackRoutes);
+app.use('/api/submissions', submissionRoutes);
+app.use('/api/leagues', leagueRoutes);
 app.use('/api/auth', authRoutes);
 app.use('/api/comments', commentRoutes);
 app.use('/api/admin', adminRoutes);

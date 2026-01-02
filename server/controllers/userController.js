@@ -45,6 +45,7 @@ export const solveProblem = async (req, res, next) => {
 
     user.totalXP += problem.xpReward;
     user.xpBalance += problem.xpReward; // Also update spendable balance
+    user.weeklyXP = (user.weeklyXP || 0) + problem.xpReward;
     user.problemsSolved += 1;
     user.timeSpent += timeSpent || 0; // Add minutes
 

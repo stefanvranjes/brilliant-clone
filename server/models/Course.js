@@ -47,10 +47,7 @@ const courseSchema = new mongoose.Schema({
         default: 'beginner'
     },
     chapters: [chapterSchema],
-    estimatedHours: {
-        type: Number,
-        default: 0
-    },
+    estimatedHours: { type: Number, default: 1 },
     enrollmentCount: {
         type: Number,
         default: 0
@@ -58,7 +55,8 @@ const courseSchema = new mongoose.Schema({
     prerequisites: [{
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Course'
-    }]
+    }],
+    conceptualTags: [String]
 }, {
     timestamps: true
 });

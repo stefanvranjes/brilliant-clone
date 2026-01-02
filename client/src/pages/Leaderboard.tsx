@@ -4,6 +4,7 @@ import { Link } from 'react-router-dom';
 import communityService, { LeaderboardUser } from '../services/community.service';
 import { PageTransition } from '../components/ui/PageTransition';
 import { LoadingSpinner } from '../components/ui/LoadingSpinner';
+import { LeagueProgress } from '../features/community/LeagueProgress';
 
 const Leaderboard: React.FC = () => {
     const [users, setUsers] = useState<LeaderboardUser[]>([]);
@@ -31,6 +32,10 @@ const Leaderboard: React.FC = () => {
             <div className="text-center mb-12">
                 <h1 className="text-4xl md:text-5xl font-black text-gray-900 mb-4 tracking-tight">Global Rankings</h1>
                 <p className="text-gray-500 font-medium text-lg">Top contributors in the Brilliant community</p>
+            </div>
+
+            <div className="mb-12">
+                <LeagueProgress />
             </div>
 
             <div className="bg-white rounded-3xl border border-gray-100 shadow-xl overflow-hidden">

@@ -65,6 +65,19 @@ const userSchema = new mongoose.Schema({
     type: Number,
     default: 0
   },
+  currentLeague: {
+    type: String,
+    enum: ['Bronze', 'Silver', 'Gold', 'Diamond', 'Master'],
+    default: 'Bronze'
+  },
+  weeklyXP: {
+    type: Number,
+    default: 0
+  },
+  lastLeagueReset: {
+    type: Date,
+    default: Date.now
+  },
   timeSpent: {
     type: Number, // in minutes
     default: 0
