@@ -19,7 +19,12 @@ const chapterSchema = new mongoose.Schema({
     isLocked: {
         type: Boolean,
         default: true
-    }
+    },
+    conceptCards: [{
+        front: String,
+        back: String,
+        difficulty: { type: String, enum: ['easy', 'medium', 'hard'], default: 'medium' }
+    }]
 });
 
 const courseSchema = new mongoose.Schema({

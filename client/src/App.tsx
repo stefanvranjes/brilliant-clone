@@ -24,6 +24,7 @@ import Register from './pages/auth/Register';
 import { XpShop } from './features/shop/XpShop';
 import { SkillForest } from './features/visualization/SkillForest';
 import { LearningDuels } from './features/community/LearningDuels';
+import { DailySprint } from './features/dashboard/DailySprint';
 
 // Simple Landing/Home Component to list modules
 const Home = () => {
@@ -120,6 +121,8 @@ const Home = () => {
           )}
         </div>
       </div>
+
+      <DailySprint />
 
       <DailyChallengeCard
         challenge={challenge}

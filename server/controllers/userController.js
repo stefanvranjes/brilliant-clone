@@ -110,7 +110,7 @@ export const getLeaderboard = async (req, res, next) => {
 export const getPublicProfile = async (req, res, next) => {
   try {
     const user = await User.findById(req.params.id)
-      .select('username displayName avatar totalXP level currentStreak longestStreak problemsSolved createdAt');
+      .select('username displayName avatar totalXP level currentStreak longestStreak problemsSolved achievements createdAt');
 
     if (!user) {
       return res.status(404).json({ message: 'User not found' });
@@ -162,6 +162,62 @@ export const purchaseItem = async (req, res, next) => {
     userData.unlockedAchievementIds = user.achievements ? user.achievements.map(a => a.id) : [];
 
     res.status(200).json(userData);
+  } catch (error) {
+    next(error);
+  }
+};
+
+// @desc    Get personalized daily sprint
+// @route   GET /api/users/daily-sprint
+// @access  Private
+export const getDailySprint = async (req, res, next) => {
+  try {
+    const user = await User.findById(req.user.id);
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    // AI Logic: Identify weak areas or progression needs
+    // For this prototype:
+    // 1. Get 2 problems from courses the user has started but not finished
+    // 2. Get 1 "Review" problem (already solved, but maybe from a week ago)
+    // 3. Get 1 "Challenge" problem (slightly higher difficulty)
+
+    const allProblems = await Problem.find();
+    const solvedIds = user.history.map(h => h.problemId.toString());
+
+    // Filter available problems
+    const reviewPool = allProblems.filter(p => solvedIds.includes(p._id.toString()));
+    const newPool = allProblems.filter(p => !solvedIds.includes(p._id.toString()));
+
+    // Simple randomization for now
+    const sprintProblems = [];
+
+    // 2 new problems
+    if (newPool.length > 0) {
+      const shuffledNew = [...newPool].sort(() => 0.5 - Math.random());
+      sprintProblems.push(...shuffledNew.slice(0, 2));
+    }
+
+    // 1 review problem
+    if (reviewPool.length > 0) {
+      const shuffledReview = [...reviewPool].sort(() => 0.5 - Math.random());
+      sprintProblems.push(shuffledReview[0]);
+    }
+
+    // 1 challenge (advanced)
+    const challengePool = newPool.filter(p => p.difficulty === 'advanced');
+    if (challengePool.length > 0) {
+      sprintProblems.push(challengePool[Math.floor(Math.random() * challengePool.length)]);
+    } else if (newPool.length > 2) {
+      sprintProblems.push(newPool[2]);
+    }
+
+    // Remove duplicates if any
+    const uniqueIds = Array.from(new Set(sprintProblems.filter(Boolean).map(p => p._id.toString())));
+    const uniqueSprint = uniqueIds.map(id => allProblems.find(p => p._id.toString() === id));
+
+    res.status(200).json(uniqueSprint);
   } catch (error) {
     next(error);
   }

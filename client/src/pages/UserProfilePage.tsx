@@ -5,6 +5,7 @@ import communityService, { PublicProfile } from '../services/community.service';
 import { PageTransition } from '../components/ui/PageTransition';
 import { LoadingSpinner } from '../components/ui/LoadingSpinner';
 import { Button } from '../components/ui/Button';
+import { AchievementGallery } from '../features/community/AchievementGallery';
 
 const UserProfilePage: React.FC = () => {
     const { userId } = useParams<{ userId: string }>();
@@ -113,7 +114,9 @@ const UserProfilePage: React.FC = () => {
                     </div>
                 </div>
 
-                <div className="lg:col-span-2">
+                <div className="lg:col-span-2 space-y-8">
+                    <AchievementGallery unlockedAchievements={profile.achievements} />
+
                     <div className="bg-white p-8 rounded-3xl border border-gray-100 shadow-sm text-center py-20">
                         <div className="w-16 h-16 bg-gray-50 rounded-full flex items-center justify-center text-3xl mx-auto mb-4 border border-dashed border-gray-200">
                             🔒

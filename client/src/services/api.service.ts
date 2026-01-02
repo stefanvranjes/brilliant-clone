@@ -214,5 +214,12 @@ export const apiService = {
 
   purchaseItem: async (itemId: string): Promise<UserProgress> => {
     return apiService.post('/users/purchase', { itemId });
+  },
+
+  getDailySprint: async (): Promise<Problem[]> => {
+    const response = await fetch(`${API_URL}/users/daily-sprint`, {
+      headers: getHeaders()
+    });
+    return handleResponse(response);
   }
 };

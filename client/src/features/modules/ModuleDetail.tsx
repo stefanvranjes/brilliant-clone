@@ -1,17 +1,27 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { apiService } from '../../services/api.service';
 import { Module, Problem } from '../../mockData';
 import { PageTransition } from '../../components/ui/PageTransition';
 import { LoadingSpinner } from '../../components/ui/LoadingSpinner';
-import { ChevronLeft, Play, CheckCircle2 } from 'lucide-react';
+import { ChevronLeft, Play, CheckCircle2, BookOpen } from 'lucide-react';
+import { Button } from '../../components/ui/Button';
+import { FlashcardReview } from '../progress/FlashcardReview';
 
 const ModuleDetail = () => {
     const { moduleId } = useParams<{ moduleId: string }>();
-    const [module, setModule] = useState<Module | null>(null);
+    const [module, setModule] = useState<any | null>(null);
     const [problems, setProblems] = useState<Problem[]>([]);
     const [loading, setLoading] = useState(true);
+    const [showReview, setShowReview] = useState(false);
+
+    // Mock concept cards if none exist
+    const mockCards = [
+        { front: 'What is the sum of angles in a triangle?', back: '180 degrees', difficulty: 'easy' as const },
+        { front: 'What is the binary representation of 5?', back: '101', difficulty: 'medium' as const },
+        { front: 'Define a "Prime Number".', back: 'A natural number greater than 1 that has no positive divisors other than 1 and itself.', difficulty: 'easy' as const }
+    ];
 
     useEffect(() => {
         const fetchData = async () => {
@@ -52,11 +62,36 @@ const ModuleDetail = () => {
                         {module.category} Course
                     </span>
                     <h1 className="text-4xl font-black text-gray-900 mb-4 tracking-tight">{module.title}</h1>
-                    <p className="text-lg text-gray-600 leading-relaxed max-w-2xl">
+                    <p className="text-lg text-gray-600 leading-relaxed max-w-2xl mb-6">
                         {module.description}
                     </p>
+                    <Button
+                        onClick={() => setShowReview(true)}
+                        variant="primary"
+                        className="flex items-center gap-2"
+                    >
+                        <BookOpen size={18} />
+                        Review Concepts
+                    </Button>
                 </div>
             </div>
+
+            <AnimatePresence>
+                {showReview && (
+                    <motion.div
+                        initial={{ opacity: 0, scale: 0.95 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        exit={{ opacity: 0, scale: 0.95 }}
+                        className="fixed inset-0 z-50 bg-gray-50 p-6 flex items-center justify-center"
+                    >
+                        <FlashcardReview
+                            cards={module.conceptCards?.length > 0 ? module.conceptCards : mockCards}
+                            title={module.title}
+                            onClose={() => setShowReview(false)}
+                        />
+                    </motion.div>
+                )}
+            </AnimatePresence>
 
             <div className="grid gap-4">
                 <h2 className="text-xl font-bold text-gray-900 mb-2">Curriculum</h2>

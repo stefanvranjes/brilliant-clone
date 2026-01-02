@@ -29,6 +29,7 @@ export interface LeaderboardUser {
 export interface PublicProfile extends LeaderboardUser {
     longestStreak: number;
     problemsSolved: number;
+    achievements?: Array<{ id: string, unlockedAt: string }>;
     createdAt: string;
 }
 
