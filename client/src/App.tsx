@@ -1,5 +1,4 @@
 import React, { useState, useMemo, useEffect } from 'react';
-import { useTranslation } from 'react-i18next';
 import { BrowserRouter as Router, Routes, Route, Link, useLocation } from 'react-router-dom';
 import { useAuth } from './context/AuthContext';
 import { AnimatePresence } from 'framer-motion';
@@ -25,8 +24,9 @@ import { XpShop } from './features/shop/XpShop';
 import { SkillForest } from './features/visualization/SkillForest';
 import { LearningDuels } from './features/community/LearningDuels';
 import { DailySprint } from './features/dashboard/DailySprint';
+import { LearningTrackCard } from './components/ui/LearningTrackCard';
+import { apiService } from './services/api.service';
 
-// Simple Landing/Home Component to list modules
 const Home = () => {
   const { modules, loading: modulesLoading, error: modulesError } = useModules();
   const { challenge, isCompleted, loading: challengeLoading } = useDailyChallenge();
@@ -36,6 +36,22 @@ const Home = () => {
   const [searchResults, setSearchResults] = useState<any[]>([]);
   const [isSearching, setIsSearching] = useState(false);
   const [viewMode, setViewMode] = useState<'grid' | 'forest'>('grid');
+  const [tracks, setTracks] = useState<any[]>([]);
+  const [loadingTracks, setLoadingTracks] = useState(true);
+
+  useEffect(() => {
+    const fetchTracks = async () => {
+      try {
+        const data = await apiService.getAllTracks();
+        setTracks(data);
+      } catch (err) {
+        console.error('Failed to fetch tracks:', err);
+      } finally {
+        setLoadingTracks(false);
+      }
+    };
+    fetchTracks();
+  }, []);
 
   useEffect(() => {
     const performSearch = async () => {
@@ -121,6 +137,26 @@ const Home = () => {
           )}
         </div>
       </div>
+
+      {!searchQuery && tracks.length > 0 && (
+        <div className="mb-16">
+          <div className="flex items-center justify-between mb-8">
+            <div>
+              <h2 className="text-3xl font-black text-gray-900 mb-2">Learning Tracks</h2>
+              <p className="text-gray-600 font-medium">Guided paths to master complex subjects.</p>
+            </div>
+            <div className="hidden sm:flex gap-2">
+              <div className="w-10 h-10 rounded-full border border-gray-200 flex items-center justify-center text-gray-400">←</div>
+              <div className="w-10 h-10 rounded-full border border-black flex items-center justify-center text-black">→</div>
+            </div>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            {tracks.map(track => (
+              <LearningTrackCard key={track._id} track={track} progress={Math.floor(Math.random() * 40)} />
+            ))}
+          </div>
+        </div>
+      )}
 
       <DailySprint />
 

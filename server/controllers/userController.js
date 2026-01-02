@@ -222,3 +222,56 @@ export const getDailySprint = async (req, res, next) => {
     next(error);
   }
 };
+// @desc    Register a failed problem attempt
+// @route   POST /api/users/mistake
+// @access  Private
+export const registerMistake = async (req, res, next) => {
+  try {
+    const { problemId } = req.body;
+    const user = await User.findById(req.user.id);
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    const mistakeIndex = user.failedAttempts.findIndex(m => m.problemId.toString() === problemId);
+
+    if (mistakeIndex > -1) {
+      // Increment retry count and set next date (e.g., 2^retry days)
+      user.failedAttempts[mistakeIndex].retryCount += 1;
+      user.failedAttempts[mistakeIndex].lastFailed = new Date();
+      const daysToAdd = Math.pow(2, user.failedAttempts[mistakeIndex].retryCount);
+      const nextDate = new Date();
+      nextDate.setDate(nextDate.getDate() + daysToAdd);
+      user.failedAttempts[mistakeIndex].nextRetryDate = nextDate;
+    } else {
+      // First time mistake
+      const nextDate = new Date();
+      nextDate.setDate(nextDate.getDate() + 1); // Retry tomorrow
+      user.failedAttempts.push({
+        problemId,
+        retryCount: 1,
+        nextRetryDate: nextDate
+      });
+    }
+
+    await user.save();
+    res.status(200).json(user.failedAttempts);
+  } catch (error) {
+    next(error);
+  }
+};
+
+// @desc    Get user's mistake bank
+// @route   GET /api/users/mistakes
+// @access  Private
+export const getMistakeBank = async (req, res, next) => {
+  try {
+    const user = await User.findById(req.user.id).populate('failedAttempts.problemId');
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+    res.status(200).json(user.failedAttempts);
+  } catch (error) {
+    next(error);
+  }
+};

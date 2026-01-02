@@ -91,6 +91,12 @@ const userSchema = new mongoose.Schema({
     enum: ['user', 'admin', 'editor'],
     default: 'user'
   },
+  failedAttempts: [{
+    problemId: { type: mongoose.Schema.Types.ObjectId, ref: 'Problem' },
+    lastFailed: { type: Date, default: Date.now },
+    retryCount: { type: Number, default: 1 },
+    nextRetryDate: { type: Date }
+  }],
   history: [historySchema]
 }, {
   timestamps: true

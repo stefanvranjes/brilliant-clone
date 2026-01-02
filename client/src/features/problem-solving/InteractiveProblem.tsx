@@ -13,6 +13,7 @@ import DiscussionSection from '../community/DiscussionSection';
 import { useAuth } from '../../context/AuthContext';
 import { SortingInteraction } from './SortingInteraction';
 import { AiTutor } from '../ai-tutor/AiTutor';
+import { apiService } from '../../services/api.service';
 
 const InteractiveProblem = () => {
   const { problemId } = useParams<{ problemId: string }>();
@@ -70,6 +71,9 @@ const InteractiveProblem = () => {
         dailyChallengeCompleted: (problem as any).isDaily || false
       });
       setShowModal(true);
+    } else {
+      // Register mistake in bank
+      apiService.registerMistake(problemId || '');
     }
   };
 

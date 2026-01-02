@@ -8,6 +8,7 @@ import { AchievementCard } from '../../components/ui/AchievementCard';
 import { apiService } from '../../services/api.service';
 import { Achievement } from '../../mockData';
 import { aiService, AiSummary } from '../../services/ai.service';
+import { MistakeBank } from './MistakeBank';
 
 const StatCard = ({ label, value, icon, color, delay }: any) => (
   <motion.div
@@ -67,6 +68,8 @@ const ProgressDashboard = () => {
         <h1 className="text-4xl font-black text-gray-900 mb-2">Your Progress</h1>
         <p className="text-gray-600 text-lg">Keep up the momentum!</p>
       </div>
+
+      <MistakeBank />
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
         <StatCard

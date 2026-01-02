@@ -221,5 +221,31 @@ export const apiService = {
       headers: getHeaders()
     });
     return handleResponse(response);
+  },
+
+  getMistakeBank: async (): Promise<any[]> => {
+    const response = await fetch(`${API_URL}/users/mistakes`, {
+      headers: getHeaders()
+    });
+    return handleResponse(response);
+  },
+
+  registerMistake: async (problemId: string): Promise<any> => {
+    const response = await fetch(`${API_URL}/users/mistake`, {
+      method: 'POST',
+      headers: getHeaders(),
+      body: JSON.stringify({ problemId })
+    });
+    return handleResponse(response);
+  },
+
+  getAllTracks: async (): Promise<any[]> => {
+    const response = await fetch(`${API_URL}/tracks`);
+    return handleResponse(response);
+  },
+
+  getTrackById: async (id: string): Promise<any> => {
+    const response = await fetch(`${API_URL}/tracks/${id}`);
+    return handleResponse(response);
   }
 };

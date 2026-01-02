@@ -47,6 +47,31 @@ connectDB().then(async () => {
       await Course.insertMany(courseData);
       console.log('Courses seeded.');
 
+      // Seed Tracks
+      const trackData = [
+        {
+          title: 'Mastering Computer Science',
+          description: 'A comprehensive path from binary logic to complex algorithms.',
+          icon: '💻',
+          category: 'Computer Science',
+          difficulty: 'intermediate',
+          courses: (await Course.find({ category: 'Computer Science' })).map(c => c._id),
+          badgeId: 'cs_master'
+        },
+        {
+          title: 'Mathematics Foundations',
+          description: 'Build a strong intuition for numbers, geometry, and calculus.',
+          icon: '📐',
+          category: 'Mathematics',
+          difficulty: 'beginner',
+          courses: (await Course.find({ category: 'Mathematics' })).map(c => c._id),
+          badgeId: 'math_wizard'
+        }
+      ];
+      const Track = (await import('./models/Track.js')).default;
+      await Track.insertMany(trackData);
+      console.log('Tracks seeded.');
+
       await User.create(MOCK_USER);
       console.log('Auto-seeding complete.');
     }

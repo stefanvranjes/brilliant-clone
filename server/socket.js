@@ -67,6 +67,17 @@ export const initSocket = (server) => {
             io.to(duelId).emit('duel-player-finished', { user, score });
         });
 
+        // Lab Sync Handlers
+        socket.on('lab-state-update', (data) => {
+            const { roomId, state } = data;
+            socket.to(roomId).emit('lab-state-sync', state);
+        });
+
+        socket.on('lab-action', (data) => {
+            const { roomId, action } = data;
+            socket.to(roomId).emit('lab-action-broadcast', action);
+        });
+
         socket.on('disconnect', () => {
             console.log('User disconnected:', socket.id);
         });
