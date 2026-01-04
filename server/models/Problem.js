@@ -63,6 +63,22 @@ const problemSchema = new mongoose.Schema({
   },
   visualizationId: {
     type: String
+  },
+  creator: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User'
+  },
+  status: {
+    type: String,
+    enum: ['draft', 'pending_review', 'published', 'rejected'],
+    default: 'published'
+  },
+  reviewFeedback: {
+    type: String
+  },
+  isCommunityContributed: {
+    type: Boolean,
+    default: false
   }
 }, {
   timestamps: true,

@@ -256,5 +256,35 @@ export const apiService = {
       body: JSON.stringify({ problemId, content })
     });
     return handleResponse(response);
+  },
+
+  // Creator Methods
+  getCreatorProblems: async (): Promise<any[]> => {
+    const response = await fetch(`${API_URL}/creator/problems`, {
+      headers: getHeaders()
+    });
+    const data = await handleResponse(response);
+    return data.data;
+  },
+
+  createCreatorProblem: async (problemData: any): Promise<any> => {
+    return apiService.post('/creator/problems', problemData);
+  },
+
+  updateCreatorProblem: async (id: string, problemData: any): Promise<any> => {
+    const response = await fetch(`${API_URL}/creator/problems/${id}`, {
+      method: 'PUT',
+      headers: getHeaders(),
+      body: JSON.stringify(problemData)
+    });
+    return handleResponse(response);
+  },
+
+  submitProblemForReview: async (id: string): Promise<any> => {
+    const response = await fetch(`${API_URL}/creator/problems/${id}/submit`, {
+      method: 'PATCH',
+      headers: getHeaders()
+    });
+    return handleResponse(response);
   }
 };

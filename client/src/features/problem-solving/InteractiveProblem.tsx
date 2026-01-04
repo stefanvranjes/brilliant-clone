@@ -15,6 +15,7 @@ import { SortingInteraction } from './SortingInteraction';
 import { AiTutor } from '../ai-tutor/AiTutor';
 import { apiService } from '../../services/api.service';
 import { SYWEditor } from './SYWEditor';
+import { parseDSL, DSLRenderer } from '../../utils/VisualDSLParser';
 
 const InteractiveProblem = () => {
   const { problemId } = useParams<{ problemId: string }>();
@@ -113,7 +114,13 @@ const InteractiveProblem = () => {
         </div>
         <h1 className="text-3xl font-black text-gray-900 mb-4">{problem.title}</h1>
         <div className="prose prose-lg text-gray-700">
-          <p>{problem.description}</p>
+          {parseDSL(problem.description).map((part, i) => (
+            typeof part === 'string' ? (
+              <p key={i}>{part}</p>
+            ) : (
+              <DSLRenderer key={i} tag={part} />
+            )
+          ))}
           {isSubmitted && isCorrect && (problem.category === 'Logic' || problem.category === 'Computer Science') && (
             <motion.div
               initial={{ opacity: 0, y: 20 }}

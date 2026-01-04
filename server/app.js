@@ -11,6 +11,8 @@ import adminRoutes from './routes/adminRoutes.js';
 import aiRoutes from './routes/aiRoutes.js';
 import submissionRoutes from './routes/submissionRoutes.js';
 import leagueRoutes from './routes/leagueRoutes.js';
+import classroomRoutes from './routes/classroomRoutes.js';
+import creatorRoutes from './routes/creatorRoutes.js';
 import { errorHandler } from './middleware/errorHandler.js';
 
 const app = express();
@@ -27,6 +29,8 @@ app.use('/api/achievements', achievementRoutes);
 app.use('/api/tracks', trackRoutes);
 app.use('/api/submissions', submissionRoutes);
 app.use('/api/leagues', leagueRoutes);
+app.use('/api/classrooms', classroomRoutes);
+app.use('/api/creator', creatorRoutes);
 app.use('/api/auth', authRoutes);
 app.use('/api/comments', commentRoutes);
 app.use('/api/admin', adminRoutes);

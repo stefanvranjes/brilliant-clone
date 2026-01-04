@@ -101,9 +101,13 @@ const userSchema = new mongoose.Schema({
   purchasedItemIds: [String],
   role: {
     type: String,
-    enum: ['user', 'admin', 'editor'],
+    enum: ['user', 'admin', 'editor', 'teacher'],
     default: 'user'
   },
+  classrooms: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Classroom'
+  }],
   failedAttempts: [{
     problemId: { type: mongoose.Schema.Types.ObjectId, ref: 'Problem' },
     lastFailed: { type: Date, default: Date.now },

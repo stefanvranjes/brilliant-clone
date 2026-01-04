@@ -51,11 +51,19 @@ const ProblemEditor: React.FC = () => {
         setSubmitting(true);
         try {
             if (isEdit && id) {
-                await apiService.updateProblem(id, problem);
+                if (localStorage.getItem('user_role') === 'admin') {
+                    await apiService.updateProblem(id, problem);
+                } else {
+                    await apiService.updateCreatorProblem(id, problem);
+                }
             } else {
-                await apiService.createProblem(problem);
+                if (localStorage.getItem('user_role') === 'admin') {
+                    await apiService.createProblem(problem);
+                } else {
+                    await apiService.createCreatorProblem(problem);
+                }
             }
-            navigate('/admin/problems');
+            navigate(localStorage.getItem('user_role') === 'admin' ? '/admin/problems' : '/creator-dashboard');
         } catch (error) {
             console.error('Save failed:', error);
             alert('Failed to save problem');

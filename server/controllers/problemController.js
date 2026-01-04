@@ -5,7 +5,7 @@ import Problem from '../models/Problem.js';
 // @access  Public
 export const getProblems = async (req, res, next) => {
   try {
-    const problems = await Problem.find();
+    const problems = await Problem.find({ status: 'published' });
     res.status(200).json(problems);
   } catch (error) {
     res.status(500);
