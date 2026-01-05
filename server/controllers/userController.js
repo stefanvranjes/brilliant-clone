@@ -1,5 +1,6 @@
 import User from '../models/User.js';
 import Problem from '../models/Problem.js';
+import Activity from '../models/Activity.js';
 
 // @desc    Get user progress
 // @route   GET /api/users/:id
@@ -50,7 +51,11 @@ export const solveProblem = async (req, res, next) => {
     user.timeSpent += timeSpent || 0; // Add minutes
 
     // Update Level
+    const oldLevel = user.level;
     user.calculateLevel();
+    if (user.level > oldLevel) {
+      await Activity.log(user._id, 'LEVEL_UP', `reached Level ${user.level}!`, { level: user.level });
+    }
 
     // Update Streak
     user.updateStreak();
@@ -156,6 +161,8 @@ export const purchaseItem = async (req, res, next) => {
 
     user.xpBalance -= price;
     user.purchasedItemIds.push(itemId);
+
+    await Activity.log(user._id, 'ACHIEVEMENT_UNLOCKED', `purchased a new item: ${itemId}`, { achievementId: itemId });
 
     await user.save();
 

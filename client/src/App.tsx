@@ -31,6 +31,7 @@ import TeacherDashboard from './features/dashboard/TeacherDashboard';
 import CreatorDashboard from './features/dashboard/CreatorDashboard';
 import MyClassrooms from './features/dashboard/MyClassrooms';
 import ClassroomStats from './features/dashboard/ClassroomStats';
+import CommunityHub from './pages/CommunityHub';
 
 const Home = () => {
   const { modules, loading: modulesLoading, error: modulesError } = useModules();
@@ -258,6 +259,7 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
               <Link to="/" className="text-sm font-bold text-gray-500 hover:text-black transition-colors">Explore</Link>
               <Link to="/dashboard" className="text-sm font-bold text-gray-500 hover:text-black transition-colors">My Progress</Link>
               <Link to="/leaderboard" className="text-sm font-bold text-gray-500 hover:text-black transition-colors">Leaderboard</Link>
+              <Link to="/community" className="text-sm font-bold text-gray-500 hover:text-black transition-colors">Community 🛡️</Link>
               <Link to="/duels" className="text-sm font-bold text-gray-500 hover:text-black transition-colors">Duels ⚔️</Link>
               <Link to="/shop" className="text-sm font-bold text-gray-500 hover:text-black transition-colors">XP Shop</Link>
               <Link to="/study-room/general" className="text-sm font-bold text-gray-500 hover:text-black transition-colors">Study Rooms</Link>
@@ -322,6 +324,7 @@ const AnimatedRoutes = () => {
         <Route path="/classroom/:id/stats" element={<ClassroomStats />} />
         <Route path="/creator-dashboard" element={<CreatorDashboard />} />
         <Route path="/my-classrooms" element={<MyClassrooms />} />
+        <Route path="/community" element={<CommunityHub />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
       </Routes>

@@ -9,6 +9,7 @@ import { apiService } from '../../services/api.service';
 import { Achievement } from '../../mockData';
 import { aiService, AiSummary } from '../../services/ai.service';
 import { MistakeBank } from './MistakeBank';
+import GlobalEvents from './GlobalEvents';
 
 const StatCard = ({ label, value, icon, color, delay }: any) => (
   <motion.div
@@ -70,6 +71,8 @@ const ProgressDashboard = () => {
       </div>
 
       <MistakeBank />
+
+      <GlobalEvents />
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
         <StatCard
