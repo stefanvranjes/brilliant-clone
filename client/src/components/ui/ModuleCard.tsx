@@ -1,13 +1,71 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { Module } from '../../mockData';
+import { useAuth } from '../../context/AuthContext';
+import { PlusCircle, Target } from 'lucide-react';
+import { Modal } from './Modal';
 
 interface ModuleCardProps {
     module: Module;
 }
 
 export const ModuleCard: React.FC<ModuleCardProps> = ({ module }) => {
+    const { user } = useAuth();
+    const [isModalOpen, setIsModalOpen] = React.useState(false);
+    const [classrooms, setClassrooms] = React.useState<any[]>([]);
+    const [loading, setLoading] = React.useState(false);
+    const [assigning, setAssigning] = React.useState(false);
+    const [success, setSuccess] = React.useState(false);
+
+    const fetchClassrooms = async () => {
+        setLoading(true);
+        try {
+            const res = await fetch('/api/classrooms', {
+                headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+            });
+            const data = await res.json();
+            if (data.success) setClassrooms(data.data);
+        } catch (err) {
+            console.error(err);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleAssign = async (classroomId: string) => {
+        setAssigning(true);
+        try {
+            const res = await fetch(`/api/classrooms/${classroomId}/assignments`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${localStorage.getItem('token')}`
+                },
+                body: JSON.stringify({
+                    problemId: module.id, // Using course ID here, controller should handle if it's course or problem
+                    title: `Master ${module.title}`
+                })
+            });
+            if (res.ok) {
+                setSuccess(true);
+                setTimeout(() => {
+                    setIsModalOpen(false);
+                    setSuccess(false);
+                }, 2000);
+            }
+        } catch (err) {
+            console.error(err);
+        } finally {
+            setAssigning(false);
+        }
+    };
+
+    const openModal = () => {
+        setIsModalOpen(true);
+        fetchClassrooms();
+    };
+
     return (
         <motion.div
             whileHover={{ y: -4 }}
@@ -42,6 +100,56 @@ export const ModuleCard: React.FC<ModuleCardProps> = ({ module }) => {
                 >
                     Explore Course
                 </Link>
+
+                {user?.role === 'teacher' && (
+                    <button
+                        onClick={openModal}
+                        className="mt-3 w-full flex items-center justify-center py-3 border-2 border-dashed border-gray-200 text-gray-400 hover:border-blue-500 hover:text-blue-600 rounded-xl font-bold text-xs transition-all uppercase tracking-widest"
+                    >
+                        <PlusCircle className="w-4 h-4 mr-2" />
+                        Assign to Class
+                    </button>
+                )}
+
+                <Modal
+                    isOpen={isModalOpen}
+                    onClose={() => setIsModalOpen(false)}
+                    title="Assign Course"
+                >
+                    {success ? (
+                        <div className="text-center py-8">
+                            <div className="w-16 h-16 bg-green-50 text-green-500 rounded-full flex items-center justify-center mx-auto mb-4">
+                                <Target className="w-8 h-8" />
+                            </div>
+                            <h4 className="text-xl font-bold text-gray-900">Successfully Assigned!</h4>
+                            <p className="text-gray-500 mt-1">Your students will see this in their dashboard.</p>
+                        </div>
+                    ) : (
+                        <div className="space-y-4">
+                            <p className="text-sm text-gray-500 mb-6">Which classroom should receive this assignment?</p>
+                            {loading ? (
+                                <div className="text-center py-4">Loading your classes...</div>
+                            ) : classrooms.length === 0 ? (
+                                <div className="text-center py-4 text-gray-400">No classrooms found. Create one in the Teacher Dashboard!</div>
+                            ) : (
+                                classrooms.map(c => (
+                                    <button
+                                        key={c._id}
+                                        onClick={() => handleAssign(c._id)}
+                                        disabled={assigning}
+                                        className="w-full flex items-center justify-between p-4 bg-gray-50 hover:bg-blue-50 rounded-2xl border border-transparent hover:border-blue-100 transition-all text-left group"
+                                    >
+                                        <div>
+                                            <div className="font-bold text-gray-900 group-hover:text-blue-600 transition-colors">{c.name}</div>
+                                            <div className="text-xs text-gray-400 uppercase tracking-widest mt-1">{c.students.length} Students</div>
+                                        </div>
+                                        <PlusCircle className="w-5 h-5 text-gray-300 group-hover:text-blue-500" />
+                                    </button>
+                                ))
+                            )}
+                        </div>
+                    )}
+                </Modal>
             </div>
         </motion.div>
     );

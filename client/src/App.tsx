@@ -29,6 +29,8 @@ import { apiService } from './services/api.service';
 import { KnowledgeMap } from './features/visualization/KnowledgeMap';
 import TeacherDashboard from './features/dashboard/TeacherDashboard';
 import CreatorDashboard from './features/dashboard/CreatorDashboard';
+import MyClassrooms from './features/dashboard/MyClassrooms';
+import ClassroomStats from './features/dashboard/ClassroomStats';
 
 const Home = () => {
   const { modules, loading: modulesLoading, error: modulesError } = useModules();
@@ -259,6 +261,7 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
               <Link to="/duels" className="text-sm font-bold text-gray-500 hover:text-black transition-colors">Duels ⚔️</Link>
               <Link to="/shop" className="text-sm font-bold text-gray-500 hover:text-black transition-colors">XP Shop</Link>
               <Link to="/study-room/general" className="text-sm font-bold text-gray-500 hover:text-black transition-colors">Study Rooms</Link>
+              <Link to="/my-classrooms" className="text-sm font-bold text-teal-600 hover:text-teal-700 transition-colors">My Class ✨</Link>
               {user?.role === 'teacher' && (
                 <Link to="/teacher-dashboard" className="text-sm font-bold text-blue-600 hover:text-blue-700 transition-colors">Teacher ✨</Link>
               )}
@@ -316,7 +319,9 @@ const AnimatedRoutes = () => {
         <Route path="/duels" element={<LearningDuels />} />
         <Route path="/shop" element={<XpShop />} />
         <Route path="/teacher-dashboard" element={<TeacherDashboard />} />
+        <Route path="/classroom/:id/stats" element={<ClassroomStats />} />
         <Route path="/creator-dashboard" element={<CreatorDashboard />} />
+        <Route path="/my-classrooms" element={<MyClassrooms />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
       </Routes>

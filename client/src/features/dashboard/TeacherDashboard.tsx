@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Users, Plus, Award, BookOpen, ChevronRight, Copy, Check } from 'lucide-react';
+import { Users, Plus, Award, BookOpen, ChevronRight, Copy, Check, BarChart2 } from 'lucide-react';
+import { Link } from 'react-router-dom';
 
 interface Classroom {
     _id: string;
@@ -138,10 +139,14 @@ const TeacherDashboard: React.FC = () => {
                             </div>
 
                             <div className="mt-8">
-                                <button className="w-full flex items-center justify-center p-4 bg-gray-900 text-white rounded-2xl font-bold hover:bg-black transition-all group">
+                                <Link
+                                    to={`/classroom/${classroom._id}/stats`}
+                                    className="w-full flex items-center justify-center p-4 bg-gray-900 text-white rounded-2xl font-bold hover:bg-black transition-all group"
+                                >
+                                    <BarChart2 className="w-5 h-5 mr-2" />
                                     View Detailed Stats
                                     <ChevronRight className="w-5 h-5 ml-2 transform group-hover:translate-x-1 transition-transform" />
-                                </button>
+                                </Link>
                             </div>
                         </motion.div>
                     ))}

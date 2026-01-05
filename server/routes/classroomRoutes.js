@@ -3,7 +3,9 @@ import {
     createClassroom,
     joinClassroom,
     getMyClassrooms,
-    getClassroomStats
+    getClassroomStats,
+    getJoinedClassrooms,
+    addAssignment
 } from '../controllers/classroomController.js';
 import { protect, authorize } from '../middleware/authMiddleware.js';
 
@@ -13,6 +15,7 @@ router.use(protect);
 
 // Student routes
 router.post('/join', joinClassroom);
+router.get('/my-joined', getJoinedClassrooms);
 
 // Teacher routes
 router.route('/')
@@ -20,5 +23,6 @@ router.route('/')
     .get(authorize('teacher', 'admin'), getMyClassrooms);
 
 router.get('/:id/stats', authorize('teacher', 'admin'), getClassroomStats);
+router.post('/:id/assignments', authorize('teacher', 'admin'), addAssignment);
 
 export default router;

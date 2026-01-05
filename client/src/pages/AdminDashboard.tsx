@@ -5,8 +5,10 @@ import { Button } from '../components/ui/Button';
 import { LoadingSpinner } from '../components/ui/LoadingSpinner';
 import { apiService } from '../services/api.service';
 import { Link } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
 
 const AdminDashboard: React.FC = () => {
+    const { user } = useAuth();
     const [stats, setStats] = useState({
         totalUsers: 0,
         totalProblems: 0,
@@ -57,11 +59,11 @@ const AdminDashboard: React.FC = () => {
             {/* Quick Stats */}
             <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-12">
                 {[
-                    { label: 'Total Learners', value: stats.totalUsers, icon: '👥', color: 'blue' },
+                    { label: 'Total Learners', value: stats.totalUsers, icon: '👥', color: 'blue', hidden: user?.role === 'editor' },
                     { label: 'Active Problems', value: stats.totalProblems, icon: '🧩', color: 'purple' },
                     { label: 'Total Courses', value: stats.totalCourses, icon: '📚', color: 'green' },
-                    { label: 'Solve Count (24h)', value: stats.recentSolves, icon: '⚡', color: 'orange' },
-                ].map((stat, idx) => (
+                    { label: 'Solve Count (24h)', value: stats.recentSolves, icon: '⚡', color: 'orange', hidden: user?.role === 'editor' },
+                ].filter(s => !s.hidden).map((stat, idx) => (
                     <motion.div
                         key={stat.label}
                         initial={{ opacity: 0, y: 20 }}
@@ -81,21 +83,23 @@ const AdminDashboard: React.FC = () => {
             </div>
 
             {/* Content Management Sections */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                <section className="bg-white rounded-3xl border border-gray-100 shadow-xl p-8">
-                    <h2 className="text-2xl font-black text-gray-900 mb-6 flex items-center gap-2">
-                        <span>📚</span> Course Catalog
-                    </h2>
-                    <div className="space-y-4">
-                        <p className="text-gray-500 mb-6">Create chapters, reorder lessons, and manage course categories.</p>
-                        <Link to="/admin/courses">
-                            <Button variant="outline" className="w-full justify-between group">
-                                <span>Manage All Courses</span>
-                                <span className="group-hover:translate-x-1 transition-transform">→</span>
-                            </Button>
-                        </Link>
-                    </div>
-                </section>
+            <div className={`grid grid-cols-1 ${user?.role === 'editor' ? '' : 'lg:grid-cols-2'} gap-8`}>
+                {user?.role !== 'editor' && (
+                    <section className="bg-white rounded-3xl border border-gray-100 shadow-xl p-8">
+                        <h2 className="text-2xl font-black text-gray-900 mb-6 flex items-center gap-2">
+                            <span>📚</span> Course Catalog
+                        </h2>
+                        <div className="space-y-4">
+                            <p className="text-gray-500 mb-6">Create chapters, reorder lessons, and manage course categories.</p>
+                            <Link to="/admin/courses">
+                                <Button variant="outline" className="w-full justify-between group">
+                                    <span>Manage All Courses</span>
+                                    <span className="group-hover:translate-x-1 transition-transform">→</span>
+                                </Button>
+                            </Link>
+                        </div>
+                    </section>
+                )}
 
                 <section className="bg-white rounded-3xl border border-gray-100 shadow-xl p-8">
                     <h2 className="text-2xl font-black text-gray-900 mb-6 flex items-center gap-2">

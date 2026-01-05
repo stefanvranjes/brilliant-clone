@@ -143,3 +143,64 @@ export const getClassroomStats = async (req, res, next) => {
         next(error);
     }
 };
+
+// @desc    Get classrooms joined by the student
+// @route   GET /api/classrooms/my-joined
+// @access  Private
+export const getJoinedClassrooms = async (req, res, next) => {
+    try {
+        const classrooms = await Classroom.find({ students: req.user._id })
+            .populate('teacher', 'displayName username avatar')
+            .populate('assignments.problemId', 'title category difficulty');
+
+        res.status(200).json({
+            success: true,
+            count: classrooms.length,
+            data: classrooms
+        });
+    } catch (error) {
+        next(error);
+    }
+};
+
+// @desc    Add an assignment to a classroom
+// @route   POST /api/classrooms/:id/assignments
+// @access  Private/Teacher
+export const addAssignment = async (req, res, next) => {
+    try {
+        const { problemId, title, dueDate } = req.body;
+
+        const classroom = await Classroom.findById(req.params.id);
+
+        if (!classroom) {
+            return res.status(404).json({
+                success: false,
+                message: 'Classroom not found'
+            });
+        }
+
+        // Authorization check
+        if (classroom.teacher.toString() !== req.user._id.toString() && req.user.role !== 'admin') {
+            return res.status(401).json({
+                success: false,
+                message: 'Not authorized to add assignments to this classroom'
+            });
+        }
+
+        const assignment = {
+            problemId,
+            title,
+            dueDate: dueDate || new Date(Date.now() + 7 * 24 * 60 * 60 * 1000) // Default 7 days
+        };
+
+        classroom.assignments.push(assignment);
+        await classroom.save();
+
+        res.status(200).json({
+            success: true,
+            data: assignment
+        });
+    } catch (error) {
+        next(error);
+    }
+};
