@@ -4,6 +4,8 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { PageTransition } from '../../components/ui/PageTransition';
 import { Button } from '../../components/ui/Button';
 import { LoadingSpinner } from '../../components/ui/LoadingSpinner';
+import { Eye, Edit3, Plus, Trash2 } from 'lucide-react';
+import InteractiveProblem from '../../features/problem-solving/InteractiveProblem';
 import { apiService } from '../../services/api.service';
 import { Problem, Hint } from '../../../../shared/types';
 
@@ -14,6 +16,7 @@ const ProblemEditor: React.FC = () => {
 
     const [loading, setLoading] = useState(isEdit);
     const [submitting, setSubmitting] = useState(false);
+    const [previewMode, setPreviewMode] = useState(false);
     const [problem, setProblem] = useState<Partial<Problem>>({
         title: '',
         description: '',
@@ -84,130 +87,218 @@ const ProblemEditor: React.FC = () => {
         setProblem({ ...problem, hints: newHints });
     };
 
+    const handleOptionChange = (idx: number, value: string) => {
+        const newOptions = [...(problem.options || [])];
+        newOptions[idx] = value;
+        setProblem({ ...problem, options: newOptions });
+    };
+
+    const addOption = () => {
+        const newOptions = [...(problem.options || [])];
+        newOptions.push('');
+        setProblem({ ...problem, options: newOptions });
+    };
+
+    const removeOption = (idx: number) => {
+        const newOptions = problem.options?.filter((_, i) => i !== idx);
+        setProblem({ ...problem, options: newOptions });
+    };
+
     if (loading) return <LoadingSpinner />;
 
     return (
         <PageTransition className="max-w-4xl mx-auto p-6 md:p-10">
             <div className="flex justify-between items-center mb-10">
-                <h1 className="text-3xl font-black text-gray-900">
-                    {isEdit ? 'Edit Problem' : 'Create New Problem'}
-                </h1>
-                <Button variant="outline" onClick={() => navigate('/admin/problems')}>Cancel</Button>
+                <div>
+                    <h1 className="text-3xl font-black text-gray-900">
+                        {isEdit ? 'Edit Problem' : 'Create New Problem'}
+                    </h1>
+                    <p className="text-gray-500 font-medium">Drafting for {problem.category || 'General'}</p>
+                </div>
+                <div className="flex gap-4">
+                    <button
+                        type="button"
+                        onClick={() => setPreviewMode(!previewMode)}
+                        className={`flex items-center gap-2 px-6 py-2.5 rounded-xl font-bold transition-all ${previewMode ? 'bg-blue-600 text-white shadow-lg shadow-blue-100' : 'bg-white text-gray-600 border border-gray-100 hover:bg-gray-50'
+                            }`}
+                    >
+                        {previewMode ? <Edit3 className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                        {previewMode ? 'Back to Edit' : 'Preview'}
+                    </button>
+                    <Button variant="outline" onClick={() => navigate(localStorage.getItem('user_role') === 'admin' ? '/admin/problems' : '/creator-dashboard')}>Cancel</Button>
+                </div>
             </div>
 
-            <form onSubmit={handleSubmit} className="space-y-8">
-                <section className="bg-white p-8 rounded-3xl border border-gray-100 shadow-xl space-y-6">
-                    <h2 className="text-xl font-black text-gray-900 border-b border-gray-50 pb-4">Basic Info</h2>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <div className="space-y-2">
-                            <label className="text-sm font-black text-gray-400 uppercase tracking-widest">Title</label>
-                            <input
-                                required
-                                value={problem.title}
-                                onChange={e => setProblem({ ...problem, title: e.target.value })}
-                                className="w-full p-4 bg-gray-50 border-2 border-transparent rounded-2xl focus:bg-white focus:border-black transition-all outline-none font-medium"
-                            />
-                        </div>
-                        <div className="space-y-2">
-                            <label className="text-sm font-black text-gray-400 uppercase tracking-widest">Category</label>
-                            <input
-                                required
-                                value={problem.category}
-                                onChange={e => setProblem({ ...problem, category: e.target.value })}
-                                className="w-full p-4 bg-gray-50 border-2 border-transparent rounded-2xl focus:bg-white focus:border-black transition-all outline-none font-medium"
-                            />
-                        </div>
+            {previewMode ? (
+                <div className="bg-white rounded-[2.5rem] p-1 shadow-2xl overflow-hidden border border-gray-100">
+                    <div className="bg-gray-50 p-4 border-b border-gray-100 text-center text-xs font-black uppercase tracking-widest text-gray-400">
+                        Student View Preview
                     </div>
-                    <div className="space-y-2">
-                        <label className="text-sm font-black text-gray-400 uppercase tracking-widest">Description</label>
-                        <textarea
-                            required
-                            rows={4}
-                            value={problem.description}
-                            onChange={e => setProblem({ ...problem, description: e.target.value })}
-                            className="w-full p-4 bg-gray-50 border-2 border-transparent rounded-2xl focus:bg-white focus:border-black transition-all outline-none font-medium"
-                        />
-                    </div>
-
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                        <div className="space-y-2">
-                            <label className="text-sm font-black text-gray-400 uppercase tracking-widest">Difficulty</label>
-                            <select
-                                value={problem.difficulty}
-                                onChange={e => setProblem({ ...problem, difficulty: e.target.value as any })}
-                                className="w-full p-4 bg-gray-50 border-2 border-transparent rounded-2xl focus:bg-white focus:border-black transition-all outline-none font-bold"
-                            >
-                                <option value="beginner">Beginner</option>
-                                <option value="intermediate">Intermediate</option>
-                                <option value="advanced">Advanced</option>
-                            </select>
-                        </div>
-                        <div className="space-y-2">
-                            <label className="text-sm font-black text-gray-400 uppercase tracking-widest">Type</label>
-                            <select
-                                value={problem.type}
-                                onChange={e => setProblem({ ...problem, type: e.target.value as any })}
-                                className="w-full p-4 bg-gray-50 border-2 border-transparent rounded-2xl focus:bg-white focus:border-black transition-all outline-none font-bold"
-                            >
-                                <option value="multiple-choice">Multiple Choice</option>
-                                <option value="numerical">Numerical</option>
-                                <option value="interactive">Interactive</option>
-                            </select>
-                        </div>
-                        <div className="space-y-2">
-                            <label className="text-sm font-black text-gray-400 uppercase tracking-widest">XP Reward</label>
-                            <input
-                                type="number"
-                                value={problem.xpReward}
-                                onChange={e => setProblem({ ...problem, xpReward: Number(e.target.value) })}
-                                className="w-full p-4 bg-gray-50 border-2 border-transparent rounded-2xl focus:bg-white focus:border-black transition-all outline-none font-medium"
-                            />
-                        </div>
-                    </div>
-                </section>
-
-                <section className="bg-white p-8 rounded-3xl border border-gray-100 shadow-xl space-y-6">
-                    <h2 className="text-xl font-black text-gray-900 border-b border-gray-50 pb-4">Solution & Hints</h2>
-                    <div className="space-y-2">
-                        <label className="text-sm font-black text-gray-400 uppercase tracking-widest">Correct Answer</label>
-                        <input
-                            required
-                            value={problem.solution?.answer as string}
-                            onChange={e => setProblem({
+                    <div className="p-8">
+                        {/* Mock problem for preview - InteractiveProblem expects a fully formed Problem object */}
+                        <InteractiveProblem
+                            problemData={{
                                 ...problem,
-                                solution: { ...problem.solution!, answer: e.target.value }
-                            })}
-                            className="w-full p-4 bg-gray-50 border-2 border-transparent rounded-2xl focus:bg-white focus:border-black transition-all outline-none font-medium"
+                                id: id || 'preview',
+                                _id: id || 'preview',
+                            } as any}
+                            onComplete={() => alert('Problem solved in preview!')}
                         />
                     </div>
-                    <div className="space-y-4">
-                        <div className="flex justify-between items-center">
-                            <label className="text-sm font-black text-gray-400 uppercase tracking-widest">Hints</label>
-                            <button type="button" onClick={addHint} className="text-blue-600 font-bold text-sm">+ Add Hint</button>
-                        </div>
-                        {problem.hints?.map((hint: Hint, idx: number) => (
-                            <div key={idx} className="flex gap-4 items-start">
-                                <span className="mt-4 font-black text-gray-300">#{idx + 1}</span>
-                                <textarea
-                                    value={hint.content}
-                                    onChange={e => handleHintChange(idx, e.target.value)}
-                                    placeholder="Hint content..."
+                </div>
+            ) : (
+                <form onSubmit={handleSubmit} className="space-y-8">
+                    <section className="bg-white p-8 rounded-3xl border border-gray-100 shadow-xl space-y-6">
+                        <h2 className="text-xl font-black text-gray-900 border-b border-gray-50 pb-4">Basic Info</h2>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div className="space-y-2">
+                                <label className="text-sm font-black text-gray-400 uppercase tracking-widest">Title</label>
+                                <input
+                                    required
+                                    value={problem.title}
+                                    onChange={e => setProblem({ ...problem, title: e.target.value })}
                                     className="w-full p-4 bg-gray-50 border-2 border-transparent rounded-2xl focus:bg-white focus:border-black transition-all outline-none font-medium"
                                 />
                             </div>
-                        ))}
-                    </div>
-                </section>
+                            <div className="space-y-2">
+                                <label className="text-sm font-black text-gray-400 uppercase tracking-widest">Category</label>
+                                <input
+                                    required
+                                    value={problem.category}
+                                    onChange={e => setProblem({ ...problem, category: e.target.value })}
+                                    className="w-full p-4 bg-gray-50 border-2 border-transparent rounded-2xl focus:bg-white focus:border-black transition-all outline-none font-medium"
+                                />
+                            </div>
+                        </div>
+                        <div className="space-y-2">
+                            <label className="text-sm font-black text-gray-400 uppercase tracking-widest">Description</label>
+                            <textarea
+                                required
+                                rows={4}
+                                value={problem.description}
+                                onChange={e => setProblem({ ...problem, description: e.target.value })}
+                                className="w-full p-4 bg-gray-50 border-2 border-transparent rounded-2xl focus:bg-white focus:border-black transition-all outline-none font-medium"
+                            />
+                        </div>
 
-                <Button
-                    type="submit"
-                    variant="primary"
-                    className="w-full py-6 text-xl"
-                    disabled={submitting}
-                >
-                    {submitting ? 'Saving...' : 'Save Problem'}
-                </Button>
-            </form>
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                            <div className="space-y-2">
+                                <label className="text-sm font-black text-gray-400 uppercase tracking-widest">Difficulty</label>
+                                <select
+                                    value={problem.difficulty}
+                                    onChange={e => setProblem({ ...problem, difficulty: e.target.value as any })}
+                                    className="w-full p-4 bg-gray-50 border-2 border-transparent rounded-2xl focus:bg-white focus:border-black transition-all outline-none font-bold"
+                                >
+                                    <option value="beginner">Beginner</option>
+                                    <option value="intermediate">Intermediate</option>
+                                    <option value="advanced">Advanced</option>
+                                </select>
+                            </div>
+                            <div className="space-y-2">
+                                <label className="text-sm font-black text-gray-400 uppercase tracking-widest">Type</label>
+                                <select
+                                    value={problem.type}
+                                    onChange={e => setProblem({ ...problem, type: e.target.value as any })}
+                                    className="w-full p-4 bg-gray-50 border-2 border-transparent rounded-2xl focus:bg-white focus:border-black transition-all outline-none font-bold"
+                                >
+                                    <option value="multiple-choice">Multiple Choice</option>
+                                    <option value="numerical">Numerical</option>
+                                    <option value="interactive">Interactive</option>
+                                </select>
+                            </div>
+                            <div className="space-y-2">
+                                <label className="text-sm font-black text-gray-400 uppercase tracking-widest">XP Reward</label>
+                                <input
+                                    type="number"
+                                    value={problem.xpReward}
+                                    onChange={e => setProblem({ ...problem, xpReward: Number(e.target.value) })}
+                                    className="w-full p-4 bg-gray-50 border-2 border-transparent rounded-2xl focus:bg-white focus:border-black transition-all outline-none font-medium"
+                                />
+                            </div>
+                        </div>
+
+                        {problem.type === 'multiple-choice' && (
+                            <div className="space-y-4 pt-4">
+                                <div className="flex justify-between items-center">
+                                    <label className="text-sm font-black text-gray-400 uppercase tracking-widest">Options</label>
+                                    <button type="button" onClick={addOption} className="text-blue-600 font-bold text-sm">+ Add Option</button>
+                                </div>
+                                {problem.options?.map((opt, idx) => (
+                                    <div key={idx} className="flex gap-4">
+                                        <input
+                                            value={opt}
+                                            onChange={e => handleOptionChange(idx, e.target.value)}
+                                            placeholder={`Option ${idx + 1}...`}
+                                            className="w-full p-4 bg-gray-50 border-2 border-transparent rounded-2xl focus:bg-white focus:border-black transition-all outline-none font-medium"
+                                        />
+                                        <button
+                                            type="button"
+                                            onClick={() => removeOption(idx)}
+                                            className="p-4 text-gray-300 hover:text-red-500 transition-colors"
+                                        >
+                                            <Trash2 className="w-5 h-5" />
+                                        </button>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
+                    </section>
+
+                    <section className="bg-white p-8 rounded-3xl border border-gray-100 shadow-xl space-y-6">
+                        <h2 className="text-xl font-black text-gray-900 border-b border-gray-50 pb-4">Solution & Hints</h2>
+                        <div className="space-y-2">
+                            <label className="text-sm font-black text-gray-400 uppercase tracking-widest">Correct Answer</label>
+                            <input
+                                required
+                                value={problem.solution?.answer as string}
+                                onChange={e => setProblem({
+                                    ...problem,
+                                    solution: { ...problem.solution!, answer: e.target.value }
+                                })}
+                                className="w-full p-4 bg-gray-50 border-2 border-transparent rounded-2xl focus:bg-white focus:border-black transition-all outline-none font-medium"
+                            />
+                        </div>
+                        <div className="space-y-2">
+                            <label className="text-sm font-black text-gray-400 uppercase tracking-widest">Explanation</label>
+                            <textarea
+                                rows={3}
+                                value={problem.solution?.explanation}
+                                onChange={e => setProblem({
+                                    ...problem,
+                                    solution: { ...problem.solution!, explanation: e.target.value }
+                                })}
+                                className="w-full p-4 bg-gray-50 border-2 border-transparent rounded-2xl focus:bg-white focus:border-black transition-all outline-none font-medium"
+                            />
+                        </div>
+                        <div className="space-y-4">
+                            <div className="flex justify-between items-center">
+                                <label className="text-sm font-black text-gray-400 uppercase tracking-widest">Hints</label>
+                                <button type="button" onClick={addHint} className="text-blue-600 font-bold text-sm">+ Add Hint</button>
+                            </div>
+                            {problem.hints?.map((hint: Hint, idx: number) => (
+                                <div key={idx} className="flex gap-4 items-start">
+                                    <span className="mt-4 font-black text-gray-300">#{idx + 1}</span>
+                                    <textarea
+                                        value={hint.content}
+                                        onChange={e => handleHintChange(idx, e.target.value)}
+                                        placeholder="Hint content..."
+                                        className="w-full p-4 bg-gray-50 border-2 border-transparent rounded-2xl focus:bg-white focus:border-black transition-all outline-none font-medium"
+                                    />
+                                </div>
+                            ))}
+                        </div>
+                    </section>
+
+                    <Button
+                        type="submit"
+                        variant="primary"
+                        className="w-full py-6 text-xl"
+                        disabled={submitting}
+                    >
+                        {submitting ? 'Saving...' : 'Save Problem'}
+                    </Button>
+                </form>
+            )}
         </PageTransition>
     );
 };

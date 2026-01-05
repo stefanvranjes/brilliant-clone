@@ -9,7 +9,9 @@ import {
     Edit3,
     Clock,
     ChevronRight,
-    AlertCircle
+    AlertCircle,
+    Trash2,
+    BarChart3
 } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 
@@ -67,6 +69,23 @@ const CreatorDashboard: React.FC = () => {
         }
     };
 
+    const deleteProblem = async (id: string) => {
+        if (!window.confirm('Are you sure you want to delete this draft?')) return;
+        try {
+            const response = await fetch(`/api/creator/problems/${id}`, {
+                method: 'DELETE',
+                headers: {
+                    'Authorization': `Bearer ${localStorage.getItem('token')}`
+                }
+            });
+            if (response.ok) {
+                fetchMyProblems();
+            }
+        } catch (error) {
+            console.error('Error deleting problem:', error);
+        }
+    };
+
     const filteredProblems = problems.filter(p => {
         if (activeTab === 'all') return true;
         if (activeTab === 'draft') return p.status === 'draft' || p.status === 'rejected';
@@ -108,6 +127,37 @@ const CreatorDashboard: React.FC = () => {
                 </Link>
             </header>
 
+            {/* Metrics */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
+                <div className="bg-white p-6 rounded-3xl border border-gray-100 shadow-sm">
+                    <div className="flex items-center gap-4 mb-2">
+                        <div className="p-3 bg-blue-50 text-blue-600 rounded-2xl">
+                            <FileText className="w-5 h-5" />
+                        </div>
+                        <span className="text-sm font-black text-gray-400 uppercase tracking-widest">Total Drafts</span>
+                    </div>
+                    <div className="text-3xl font-black text-gray-900">{problems.filter(p => p.status === 'draft').length}</div>
+                </div>
+                <div className="bg-white p-6 rounded-3xl border border-gray-100 shadow-sm">
+                    <div className="flex items-center gap-4 mb-2">
+                        <div className="p-3 bg-amber-50 text-amber-600 rounded-2xl">
+                            <Clock className="w-5 h-5" />
+                        </div>
+                        <span className="text-sm font-black text-gray-400 uppercase tracking-widest">In Review</span>
+                    </div>
+                    <div className="text-3xl font-black text-gray-900">{problems.filter(p => p.status === 'pending_review').length}</div>
+                </div>
+                <div className="bg-white p-6 rounded-3xl border border-gray-100 shadow-sm">
+                    <div className="flex items-center gap-4 mb-2">
+                        <div className="p-3 bg-green-50 text-green-600 rounded-2xl">
+                            <CheckCircle className="w-5 h-5" />
+                        </div>
+                        <span className="text-sm font-black text-gray-400 uppercase tracking-widest">Published</span>
+                    </div>
+                    <div className="text-3xl font-black text-gray-900">{problems.filter(p => p.status === 'published').length}</div>
+                </div>
+            </div>
+
             {/* Tabs */}
             <div className="flex gap-2 mb-10 overflow-x-auto pb-2 scrollbar-hide">
                 {(['all', 'draft', 'review', 'published'] as const).map((tab) => (
@@ -115,8 +165,8 @@ const CreatorDashboard: React.FC = () => {
                         key={tab}
                         onClick={() => setActiveTab(tab)}
                         className={`px-6 py-2.5 rounded-full text-sm font-bold transition-all capitalize whitespace-nowrap ${activeTab === tab
-                                ? 'bg-blue-600 text-white shadow-lg shadow-blue-100'
-                                : 'bg-white text-gray-500 border border-gray-100 hover:bg-gray-50'
+                            ? 'bg-blue-600 text-white shadow-lg shadow-blue-100'
+                            : 'bg-white text-gray-500 border border-gray-100 hover:bg-gray-50'
                             }`}
                     >
                         {tab === 'review' ? 'In Review' : tab}
@@ -148,8 +198,8 @@ const CreatorDashboard: React.FC = () => {
                             >
                                 <div className="flex items-center gap-6 w-full md:w-auto">
                                     <div className={`p-4 rounded-2xl ${problem.status === 'published' ? 'bg-green-50' :
-                                            problem.status === 'pending_review' ? 'bg-amber-50' :
-                                                problem.status === 'rejected' ? 'bg-red-50' : 'bg-gray-50'
+                                        problem.status === 'pending_review' ? 'bg-amber-50' :
+                                            problem.status === 'rejected' ? 'bg-red-50' : 'bg-gray-50'
                                         }`}>
                                         {getStatusIcon(problem.status)}
                                     </div>
@@ -159,7 +209,7 @@ const CreatorDashboard: React.FC = () => {
                                             <span className="text-sm font-bold text-gray-400 uppercase tracking-widest">{problem.category}</span>
                                             <span className="w-1 h-1 bg-gray-200 rounded-full"></span>
                                             <span className={`text-sm font-bold capitalize ${problem.difficulty === 'advanced' ? 'text-red-500' :
-                                                    problem.difficulty === 'intermediate' ? 'text-amber-500' : 'text-green-500'
+                                                problem.difficulty === 'intermediate' ? 'text-amber-500' : 'text-green-500'
                                                 }`}>
                                                 {problem.difficulty}
                                             </span>
@@ -208,6 +258,15 @@ const CreatorDashboard: React.FC = () => {
                                         <span className="px-6 py-3 bg-gray-100 text-gray-400 rounded-xl font-bold cursor-default">
                                             Under Review
                                         </span>
+                                    )}
+                                    {(problem.status === 'draft' || problem.status === 'rejected') && (
+                                        <button
+                                            onClick={() => deleteProblem(problem._id)}
+                                            className="p-3 text-gray-300 hover:text-red-500 hover:bg-red-50 rounded-xl transition-all"
+                                            title="Delete Draft"
+                                        >
+                                            <Trash2 className="w-5 h-5" />
+                                        </button>
                                     )}
                                 </div>
                             </motion.div>

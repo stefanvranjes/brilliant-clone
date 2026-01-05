@@ -2,6 +2,8 @@ import React, { useState, useMemo, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from './context/AuthContext';
 import { AnimatePresence } from 'framer-motion';
+import { useTranslation } from 'react-i18next';
+import LanguageSwitcher from './components/ui/LanguageSwitcher';
 import ProgressDashboard from './features/dashboard/ProgressDashboard';
 import InteractiveProblem from './features/problem-solving/InteractiveProblem';
 import ModuleDetail from './features/modules/ModuleDetail';
@@ -34,6 +36,7 @@ import ClassroomStats from './features/dashboard/ClassroomStats';
 import CommunityHub from './pages/CommunityHub';
 
 const Home = () => {
+  const { t } = useTranslation();
   const { modules, loading: modulesLoading, error: modulesError } = useModules();
   const { challenge, isCompleted, loading: challengeLoading } = useDailyChallenge();
   const { progress } = useProgress();
@@ -150,32 +153,12 @@ const Home = () => {
         </button>
       </div>
 
-      <div className="mb-12">
-        <div className="relative group max-w-2xl">
-          <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-gray-400 group-focus-within:text-black transition-colors">
-            <span className="text-xl">🔍</span>
-          </div>
-          <input
-            type="text"
-            placeholder="Search courses by topic, title, or category..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="block w-full pl-12 pr-4 py-4 bg-white border-2 border-gray-100 rounded-2xl leading-5 focus:outline-none focus:border-black focus:ring-0 sm:text-lg font-medium transition-all shadow-sm hover:border-gray-200"
-          />
-          {isSearching && (
-            <div className="absolute inset-y-0 right-0 pr-4 flex items-center">
-              <div className="animate-spin h-5 w-5 border-2 border-gray-300 border-t-black rounded-full"></div>
-            </div>
-          )}
-        </div>
-      </div>
-
       {!searchQuery && tracks.length > 0 && (
         <div className="mb-16">
           <div className="flex items-center justify-between mb-8">
             <div>
-              <h2 className="text-3xl font-black text-gray-900 mb-2">Learning Tracks</h2>
-              <p className="text-gray-600 font-medium">Guided paths to master complex subjects.</p>
+              <h2 className="text-3xl font-black text-gray-900 mb-2">{t('home.learning_tracks')}</h2>
+              <p className="text-gray-600 font-medium">{t('home.learning_tracks_subtitle')}</p>
             </div>
             <div className="hidden sm:flex gap-2">
               <div className="w-10 h-10 rounded-full border border-gray-200 flex items-center justify-center text-gray-400">←</div>
@@ -245,6 +228,21 @@ const Home = () => {
 
 const Layout = ({ children }: { children: React.ReactNode }) => {
   const { user, logout } = useAuth();
+  const { t } = useTranslation();
+  const [isOnline, setIsOnline] = useState(navigator.onLine);
+
+  useEffect(() => {
+    const handleOnline = () => setIsOnline(true);
+    const handleOffline = () => setIsOnline(false);
+
+    window.addEventListener('online', handleOnline);
+    window.addEventListener('offline', handleOffline);
+
+    return () => {
+      window.removeEventListener('online', handleOnline);
+      window.removeEventListener('offline', handleOffline);
+    };
+  }, []);
 
   return (
     <div className="min-h-screen bg-gray-50 text-gray-900 font-sans">
@@ -253,43 +251,55 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
           <Link to="/" className="text-2xl font-black tracking-tighter flex items-center gap-2">
             <div className="w-8 h-8 bg-black rounded-lg flex items-center justify-center text-white">B</div>
             <span>BrilliantClone</span>
+            {!isOnline && (
+              <span className="ml-2 px-2 py-0.5 bg-red-100 text-red-600 text-[10px] font-black uppercase tracking-widest rounded-full border border-red-200">
+                Offline
+              </span>
+            )}
           </Link>
           <div className="flex items-center gap-6">
-            <div className="hidden md:flex gap-6">
-              <Link to="/" className="text-sm font-bold text-gray-500 hover:text-black transition-colors">Explore</Link>
-              <Link to="/dashboard" className="text-sm font-bold text-gray-500 hover:text-black transition-colors">My Progress</Link>
-              <Link to="/leaderboard" className="text-sm font-bold text-gray-500 hover:text-black transition-colors">Leaderboard</Link>
+            <div className="hidden md:flex gap-6 items-center">
+              <Link to="/" className="text-sm font-bold text-gray-500 hover:text-black transition-colors">{t('nav.explore')}</Link>
+              <Link to="/dashboard" className="text-sm font-bold text-gray-500 hover:text-black transition-colors">{t('nav.progress')}</Link>
+              <Link to="/leaderboard" className="text-sm font-bold text-gray-500 hover:text-black transition-colors">{t('nav.leaderboard')}</Link>
               <Link to="/community" className="text-sm font-bold text-gray-500 hover:text-black transition-colors">Community 🛡️</Link>
               <Link to="/duels" className="text-sm font-bold text-gray-500 hover:text-black transition-colors">Duels ⚔️</Link>
-              <Link to="/shop" className="text-sm font-bold text-gray-500 hover:text-black transition-colors">XP Shop</Link>
-              <Link to="/study-room/general" className="text-sm font-bold text-gray-500 hover:text-black transition-colors">Study Rooms</Link>
-              <Link to="/my-classrooms" className="text-sm font-bold text-teal-600 hover:text-teal-700 transition-colors">My Class ✨</Link>
-              {user?.role === 'teacher' && (
-                <Link to="/teacher-dashboard" className="text-sm font-bold text-blue-600 hover:text-blue-700 transition-colors">Teacher ✨</Link>
+              {user?.role === 'admin' && (
+                <Link to="/admin/problems" className="text-sm font-bold text-gray-500 hover:text-black transition-colors">{t('nav.admin')}</Link>
               )}
-              {(user?.role === 'teacher' || user?.role === 'admin') && (
-                <Link to="/creator-dashboard" className="text-sm font-bold text-indigo-600 hover:text-indigo-700 transition-colors">Creator 🎨</Link>
+              {user?.role === 'teacher' && (
+                <Link to="/teacher-dashboard" className="text-sm font-bold text-gray-500 hover:text-black transition-colors">Teaching</Link>
+              )}
+              {user?.role === 'editor' && (
+                <Link to="/creator-dashboard" className="text-sm font-bold text-gray-500 hover:text-black transition-colors">Creator</Link>
+              )}
+              <LanguageSwitcher />
+            </div>
+
+            <div className="flex items-center gap-3">
+              {user ? (
+                <div className="flex items-center gap-4">
+                  <span className="hidden sm:inline text-sm font-black text-gray-900">
+                    {user.totalXP} XP
+                  </span>
+                  <button
+                    onClick={logout}
+                    className="px-4 py-2 text-sm font-black border-2 border-black rounded-xl hover:bg-black hover:text-white transition-all"
+                  >
+                    {t('nav.logout')}
+                  </button>
+                </div>
+              ) : (
+                <div className="flex gap-2">
+                  <Link to="/login" className="px-4 py-2 text-sm font-black hover:text-blue-600 transition-colors">
+                    {t('nav.login')}
+                  </Link>
+                  <Link to="/signup" className="px-6 py-2 bg-black text-white rounded-xl text-sm font-black hover:bg-gray-800 transition-colors">
+                    {t('nav.signup')}
+                  </Link>
+                </div>
               )}
             </div>
-            <div className="h-6 w-[1px] bg-gray-100 hidden md:block"></div>
-            {user ? (
-              <div className="flex items-center gap-4">
-                <span className="text-sm font-black text-gray-900 hidden sm:block">Hi, {user.displayName}</span>
-                <button
-                  onClick={logout}
-                  className="text-xs font-black uppercase tracking-widest text-gray-400 hover:text-red-500 transition-colors"
-                >
-                  Logout
-                </button>
-              </div>
-            ) : (
-              <div className="flex items-center gap-4">
-                <Link to="/login" className="text-sm font-bold text-gray-600 hover:text-black">Log in</Link>
-                <Link to="/register" className="bg-black text-white px-5 py-2 rounded-xl text-sm font-black hover:bg-gray-800 transition-all active:scale-[0.98]">
-                  Sign up
-                </Link>
-              </div>
-            )}
           </div>
         </div>
       </nav>

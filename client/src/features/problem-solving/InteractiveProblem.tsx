@@ -17,12 +17,15 @@ import { apiService } from '../../services/api.service';
 import { SYWEditor } from './SYWEditor';
 import { parseDSL, DSLRenderer } from '../../utils/VisualDSLParser';
 
-const InteractiveProblem = () => {
+const InteractiveProblem = ({ problemData, onComplete }: { problemData?: any, onComplete?: (correct: boolean) => void }) => {
   const { problemId } = useParams<{ problemId: string }>();
   const navigate = useNavigate();
-  const { problem: problemRaw, loading, error } = useProblem(problemId);
+  const { problem: problemFetched, loading, error } = useProblem(problemData ? undefined : problemId);
   const { updateProgress } = useProgress();
   const { user } = useAuth();
+
+  // Use prop if provided, otherwise used fetched data
+  const problemRaw = problemData || problemFetched;
 
   // Safeguard: cast problem to any to avoid persistent type errors in environment
   const problem = problemRaw as any;

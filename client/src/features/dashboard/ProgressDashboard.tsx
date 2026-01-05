@@ -10,13 +10,15 @@ import { Achievement } from '../../mockData';
 import { aiService, AiSummary } from '../../services/ai.service';
 import { MistakeBank } from './MistakeBank';
 import GlobalEvents from './GlobalEvents';
+import MasteryChart from './MasteryChart';
+import SkillRecommendations from './SkillRecommendations';
 
 const StatCard = ({ label, value, icon, color, delay }: any) => (
   <motion.div
     initial={{ opacity: 0, y: 20 }}
     animate={{ opacity: 1, y: 0 }}
     transition={{ delay, duration: 0.4 }}
-    className="bg-white p-6 rounded-xl border border-gray-100 shadow-sm hover:shadow-md transition-all"
+    className="glass-card p-6 rounded-xl shadow-sm hover:shadow-md transition-all"
   >
     <div className={`w-12 h-12 ${color} rounded-lg flex items-center justify-center mb-4 text-2xl`}>
       {icon}
@@ -111,7 +113,7 @@ const ProgressDashboard = () => {
           initial={{ opacity: 0, x: -20 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ delay: 0.5 }}
-          className="lg:col-span-2 bg-white p-8 rounded-2xl border border-gray-200 shadow-sm"
+          className="lg:col-span-2 glass-card p-8 rounded-2xl shadow-sm"
         >
           <div className="flex justify-between items-end mb-6">
             <h3 className="text-xl font-bold text-gray-900">Weekly Activity</h3>
@@ -169,6 +171,16 @@ const ProgressDashboard = () => {
             )}
           </div>
         </motion.div>
+      </div>
+
+      {/* Adaptive Insights */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-16">
+        <div className="lg:col-span-1">
+          <MasteryChart />
+        </div>
+        <div className="lg:col-span-2">
+          <SkillRecommendations />
+        </div>
       </div>
 
       {/* Achievements Section */}

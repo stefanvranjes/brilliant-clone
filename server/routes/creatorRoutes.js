@@ -4,7 +4,8 @@ import {
     createProblemDraft,
     updateProblemDraft,
     submitForReview,
-    reviewProblem
+    reviewProblem,
+    deleteProblem
 } from '../controllers/creatorController.js';
 import { protect, authorize } from '../middleware/authMiddleware.js';
 
@@ -18,7 +19,8 @@ router.route('/problems')
     .post(createProblemDraft);
 
 router.route('/problems/:id')
-    .put(updateProblemDraft);
+    .put(updateProblemDraft)
+    .delete(deleteProblem);
 
 router.patch('/problems/:id/submit', submitForReview);
 

@@ -3,8 +3,10 @@ import { Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Module } from '../../mockData';
 import { useAuth } from '../../context/AuthContext';
-import { PlusCircle, Target } from 'lucide-react';
+import { PlusCircle, Target, Download, CloudOff, CheckCircle2 } from 'lucide-react';
 import { Modal } from './Modal';
+import { offlineService } from '../../services/offlineService';
+import { apiService } from '../../services/api.service';
 
 interface ModuleCardProps {
     module: Module;
@@ -17,6 +19,44 @@ export const ModuleCard: React.FC<ModuleCardProps> = ({ module }) => {
     const [loading, setLoading] = React.useState(false);
     const [assigning, setAssigning] = React.useState(false);
     const [success, setSuccess] = React.useState(false);
+    const [isDownloaded, setIsDownloaded] = React.useState(false);
+    const [downloading, setDownloading] = React.useState(false);
+
+    React.useEffect(() => {
+        checkOfflineStatus();
+    }, [module.id]);
+
+    const checkOfflineStatus = async () => {
+        const content = await offlineService.getContent(module.id);
+        setIsDownloaded(!!content);
+    };
+
+    const handleDownload = async () => {
+        if (isDownloaded) {
+            await offlineService.removeContent(module.id);
+            for (const pid of module.problemIds) {
+                await offlineService.removeContent(pid);
+            }
+            setIsDownloaded(false);
+            return;
+        }
+
+        setDownloading(true);
+        try {
+            await offlineService.saveContent(module.id, module);
+            for (const pid of module.problemIds) {
+                const problemData = await apiService.getProblem(pid);
+                if (problemData) {
+                    await offlineService.saveContent(pid, problemData);
+                }
+            }
+            setIsDownloaded(true);
+        } catch (err) {
+            console.error('Download failed:', err);
+        } finally {
+            setDownloading(false);
+        }
+    };
 
     const fetchClassrooms = async () => {
         setLoading(true);
@@ -72,8 +112,13 @@ export const ModuleCard: React.FC<ModuleCardProps> = ({ module }) => {
             className="bg-white rounded-2xl border border-gray-200 overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 flex flex-col h-full"
         >
             <div className="p-8 pb-4">
-                <div className="w-16 h-16 bg-gray-50 rounded-2xl flex items-center justify-center text-4xl mb-6 shadow-inner border border-gray-100">
+                <div className="relative w-16 h-16 bg-gray-50 rounded-2xl flex items-center justify-center text-4xl mb-6 shadow-inner border border-gray-100">
                     {module.icon}
+                    {isDownloaded && (
+                        <div className="absolute -top-2 -right-2 bg-green-500 text-white p-1 rounded-full border-2 border-white shadow-sm">
+                            <CheckCircle2 className="w-3 h-3" />
+                        </div>
+                    )}
                 </div>
                 <div className="flex items-center gap-2 mb-2">
                     <span className="text-[10px] font-bold uppercase tracking-widest text-blue-600 bg-blue-50 px-2 py-1 rounded-md">
@@ -83,7 +128,24 @@ export const ModuleCard: React.FC<ModuleCardProps> = ({ module }) => {
                         {module.problemIds.length} Lessons
                     </span>
                 </div>
-                <h3 className="text-2xl font-black text-gray-900 mb-3 leading-tight">{module.title}</h3>
+                <div className="flex justify-between items-start">
+                    <h3 className="text-2xl font-black text-gray-900 mb-3 leading-tight flex-1">{module.title}</h3>
+                    <button
+                        onClick={handleDownload}
+                        disabled={downloading}
+                        className={`p-2 rounded-lg transition-all ${isDownloaded ? 'text-blue-600 bg-blue-50' : 'text-gray-300 hover:bg-gray-50 hover:text-gray-400'
+                            }`}
+                        title={isDownloaded ? 'Remove from Offline' : 'Download for Offline'}
+                    >
+                        {downloading ? (
+                            <div className="w-4 h-4 border-2 border-blue-600 border-t-transparent animate-spin rounded-full" />
+                        ) : isDownloaded ? (
+                            <CloudOff className="w-5 h-5" />
+                        ) : (
+                            <Download className="w-5 h-5" />
+                        )}
+                    </button>
+                </div>
                 <p className="text-gray-600 text-sm leading-relaxed mb-6 line-clamp-2">
                     {module.description}
                 </p>

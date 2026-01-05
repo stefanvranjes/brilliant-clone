@@ -143,3 +143,34 @@ export const reviewProblem = async (req, res, next) => {
         next(error);
     }
 };
+// @desc    Delete a problem draft
+// @route   DELETE /api/creator/problems/:id
+// @access  Private
+export const deleteProblem = async (req, res, next) => {
+    try {
+        const problem = await Problem.findById(req.params.id);
+
+        if (!problem) {
+            return res.status(404).json({ success: false, message: 'Problem not found' });
+        }
+
+        // Ensure user is the creator
+        if (problem.creator.toString() !== req.user._id.toString() && req.user.role !== 'admin') {
+            return res.status(401).json({ success: false, message: 'Not authorized' });
+        }
+
+        // Only allow deleting drafts or rejected problems
+        if (problem.status === 'published' && req.user.role !== 'admin') {
+            return res.status(400).json({ success: false, message: 'Cannot delete published problems' });
+        }
+
+        await Problem.findByIdAndDelete(req.params.id);
+
+        res.status(200).json({
+            success: true,
+            message: 'Problem deleted'
+        });
+    } catch (error) {
+        next(error);
+    }
+};

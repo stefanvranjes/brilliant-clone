@@ -2,6 +2,7 @@ import { openDB, IDBPDatabase } from 'idb';
 
 const DB_NAME = 'brilliant-clone-db';
 const STORE_NAME = 'offline-progress';
+const CONTENT_STORE = 'offline-content';
 
 export interface OfflineProgress {
     problemId: string;
@@ -15,13 +16,32 @@ export class OfflineService {
     private db: Promise<IDBPDatabase>;
 
     constructor() {
-        this.db = openDB(DB_NAME, 1, {
-            upgrade(db) {
+        this.db = openDB(DB_NAME, 2, {
+            upgrade(db, oldVersion) {
                 if (!db.objectStoreNames.contains(STORE_NAME)) {
                     db.createObjectStore(STORE_NAME, { keyPath: 'problemId' });
                 }
+                if (!db.objectStoreNames.contains(CONTENT_STORE)) {
+                    db.createObjectStore(CONTENT_STORE, { keyPath: 'id' });
+                }
             },
         });
+    }
+
+    async saveContent(id: string, data: any) {
+        const db = await this.db;
+        await db.put(CONTENT_STORE, { id, data, timestamp: Date.now() });
+    }
+
+    async getContent(id: string) {
+        const db = await this.db;
+        const entry = await db.get(CONTENT_STORE, id);
+        return entry?.data;
+    }
+
+    async removeContent(id: string) {
+        const db = await this.db;
+        await db.delete(CONTENT_STORE, id);
     }
 
     async saveProgress(progress: OfflineProgress) {

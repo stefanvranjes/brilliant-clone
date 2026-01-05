@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { apiService } from '../services/api.service';
+import { offlineService } from '../services/offlineService';
 
 import { Problem } from '../mockData';
 
@@ -15,7 +16,17 @@ export const useProblem = (problemId?: string) => {
       const data = await apiService.getProblem(id);
       setProblem(data);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Unknown error');
+      console.log('Network failed, trying offline content');
+      try {
+        const offlineData = await offlineService.getContent(id);
+        if (offlineData) {
+          setProblem(offlineData);
+        } else {
+          setError(err instanceof Error ? err.message : 'Unknown error');
+        }
+      } catch (idbErr) {
+        setError('Offline content not available');
+      }
     } finally {
       setLoading(false);
     }
