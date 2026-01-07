@@ -19,6 +19,7 @@ export interface Module {
   icon: string;
   problemIds: string[];
   totalXP: number;
+  chapters?: Chapter[];
 }
 
 // Helper to create hints

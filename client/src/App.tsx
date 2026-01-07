@@ -5,19 +5,20 @@ import { AnimatePresence } from 'framer-motion';
 import { useTranslation } from 'react-i18next';
 import LanguageSwitcher from './components/ui/LanguageSwitcher';
 import { LoadingSpinner } from './components/ui/LoadingSpinner';
-
-const ProgressDashboard = lazy(() => import('./features/dashboard/ProgressDashboard'));
-const InteractiveProblem = lazy(() => import('./features/problem-solving/InteractiveProblem'));
-const ModuleDetail = lazy(() => import('./features/modules/ModuleDetail'));
-const OnboardingDiagnostic = lazy(() => import('./features/onboarding/OnboardingDiagnostic'));
-
 import { useModules } from './hooks/useModules';
 import { ModuleCard } from './components/ui/ModuleCard';
 import { PageTransition } from './components/ui/PageTransition';
 import { DailyChallengeCard } from './components/ui/DailyChallengeCard';
 import { useDailyChallenge } from './hooks/useDailyChallenge';
 import { useProgress } from './hooks/useProgress';
+import { LearningTrackCard } from './components/ui/LearningTrackCard';
+import { apiService } from './services/api.service';
+import { KnowledgeMap } from './features/visualization/KnowledgeMap';
 
+const ProgressDashboard = lazy(() => import('./features/dashboard/ProgressDashboard'));
+const InteractiveProblem = lazy(() => import('./features/problem-solving/InteractiveProblem'));
+const ModuleDetail = lazy(() => import('./features/modules/ModuleDetail'));
+const OnboardingDiagnostic = lazy(() => import('./features/onboarding/OnboardingDiagnostic'));
 const Leaderboard = lazy(() => import('./pages/Leaderboard'));
 const UserProfilePage = lazy(() => import('./pages/UserProfilePage'));
 const AdminDashboard = lazy(() => import('./pages/AdminDashboard'));
@@ -31,11 +32,6 @@ const XpShop = lazy(() => import('./features/shop/XpShop').then(m => ({ default:
 const SkillForest = lazy(() => import('./features/visualization/SkillForest').then(m => ({ default: m.SkillForest })));
 const LearningDuels = lazy(() => import('./features/community/LearningDuels').then(m => ({ default: m.LearningDuels })));
 const DailySprint = lazy(() => import('./features/dashboard/DailySprint').then(m => ({ default: m.DailySprint })));
-
-import { LearningTrackCard } from './components/ui/LearningTrackCard';
-import { apiService } from './services/api.service';
-import { KnowledgeMap } from './features/visualization/KnowledgeMap';
-
 const TeacherDashboard = lazy(() => import('./features/dashboard/TeacherDashboard'));
 const CreatorDashboard = lazy(() => import('./features/dashboard/CreatorDashboard'));
 const MyClassrooms = lazy(() => import('./features/dashboard/MyClassrooms'));

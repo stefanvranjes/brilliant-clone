@@ -34,7 +34,7 @@ export const ModuleCard: React.FC<ModuleCardProps> = ({ module }) => {
     const handleDownload = async () => {
         if (isDownloaded) {
             await offlineService.removeContent(module.id);
-            for (const pid of module.problemIds) {
+            for (const pid of (module.problemIds || [])) {
                 await offlineService.removeContent(pid);
             }
             setIsDownloaded(false);
@@ -44,7 +44,7 @@ export const ModuleCard: React.FC<ModuleCardProps> = ({ module }) => {
         setDownloading(true);
         try {
             await offlineService.saveContent(module.id, module);
-            for (const pid of module.problemIds) {
+            for (const pid of (module.problemIds || [])) {
                 const problemData = await apiService.getProblem(pid);
                 if (problemData) {
                     await offlineService.saveContent(pid, problemData);
@@ -125,7 +125,7 @@ export const ModuleCard: React.FC<ModuleCardProps> = ({ module }) => {
                         {module.category}
                     </span>
                     <span className="text-[10px] font-bold uppercase tracking-widest text-gray-400">
-                        {module.problemIds.length} Lessons
+                        {module.problemIds?.length || module.chapters?.reduce((acc: number, ch: any) => acc + (ch.problems?.length || 0), 0) || 0} Lessons
                     </span>
                 </div>
                 <div className="flex justify-between items-start">
