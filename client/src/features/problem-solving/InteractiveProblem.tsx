@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Problem } from '../../mockData';
 import { useParams, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
@@ -18,6 +19,7 @@ import { SYWEditor } from './SYWEditor';
 import { parseDSL, DSLRenderer } from '../../utils/VisualDSLParser';
 
 const InteractiveProblem = ({ problemData, onComplete }: { problemData?: any, onComplete?: (correct: boolean) => void }) => {
+  const { t } = useTranslation();
   const { problemId } = useParams<{ problemId: string }>();
   const navigate = useNavigate();
   const { problem: problemFetched, loading, error } = useProblem(problemData ? undefined : problemId);
@@ -231,7 +233,7 @@ const InteractiveProblem = ({ problemData, onComplete }: { problemData?: any, on
         {(problem.type === 'numerical' || (problem.type as string) === 'fill-in-the-blank') && (
           <div className="max-w-md mx-auto">
             <label className="block text-sm font-bold text-gray-700 mb-2">
-              Your Answer
+              {t('problem.your_answer')}
             </label>
             <div className="relative">
               <input
@@ -252,9 +254,9 @@ const InteractiveProblem = ({ problemData, onComplete }: { problemData?: any, on
                   className={`mt-3 font-bold flex items-center gap-2 ${isCorrect ? 'text-green-600' : 'text-red-600'}`}
                 >
                   {isCorrect ? (
-                    <><span>✓</span> Correct!</>
+                    <><span>✓</span> {t('problem.correct')}</>
                   ) : (
-                    <><span>✕</span> Incorrect. The answer is {problem.solution.answer}</>
+                    <><span>✕</span> {t('problem.incorrect')} {problem.solution.explanation && `Correction: ${problem.solution.answer}`}</>
                   )}
                 </motion.div>
               )}
@@ -284,7 +286,7 @@ const InteractiveProblem = ({ problemData, onComplete }: { problemData?: any, on
       {problem.hints && problem.hints.length > 0 && (
         <div className="mb-12">
           <div className="flex items-center gap-3 mb-6">
-            <h3 className="text-xl font-black text-gray-900 leading-none">Hints</h3>
+            <h3 className="text-xl font-black text-gray-900 leading-none">{t('problem.hint')}</h3>
             <div className="h-1 grow bg-gray-100 rounded-full" />
           </div>
 
@@ -354,7 +356,7 @@ const InteractiveProblem = ({ problemData, onComplete }: { problemData?: any, on
           disabled={!isSubmitted && isSubmitDisabled}
           variant={isSubmitted ? (isCorrect ? 'primary' : 'secondary') : 'primary'}
         >
-          {isSubmitted ? (isCorrect ? 'Correct!' : 'Try Again') : 'Submit Answer'}
+          {isSubmitted ? (isCorrect ? t('problem.correct') : t('problem.try_again')) : t('problem.submit')}
         </Button>
       </div>
 
@@ -379,7 +381,7 @@ const InteractiveProblem = ({ problemData, onComplete }: { problemData?: any, on
               View Stats
             </Button>
             <Button onClick={() => navigate('/')}>
-              Next Problem
+              {t('problem.next')}
             </Button>
           </div>
         </div>

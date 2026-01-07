@@ -9,6 +9,7 @@ interface RecommendedProblem {
     category: string;
     difficulty: string;
     xpReward: number;
+    recommendationReason?: string;
 }
 
 const SkillRecommendations: React.FC = () => {
@@ -41,14 +42,14 @@ const SkillRecommendations: React.FC = () => {
     if (recommendations.length === 0) return null;
 
     return (
-        <section className="mt-12">
+        <section className="mt-8">
             <div className="flex items-center justify-between mb-8">
                 <div>
                     <h2 className="text-2xl font-black text-gray-900 flex items-center gap-2">
                         <Sparkles className="text-amber-500 w-6 h-6" />
-                        Recommended for You
+                        Next Steps for You
                     </h2>
-                    <p className="text-sm font-bold text-gray-400 uppercase tracking-widest mt-1">Based on your growth areas</p>
+                    <p className="text-sm font-bold text-gray-400 uppercase tracking-widest mt-1">Adaptive Recommendations</p>
                 </div>
             </div>
 
@@ -59,7 +60,7 @@ const SkillRecommendations: React.FC = () => {
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ delay: idx * 0.1 }}
-                        className="group bg-white p-6 rounded-3xl border border-gray-100 shadow-sm hover:shadow-xl hover:border-blue-100 transition-all cursor-pointer relative overflow-hidden"
+                        className="group bg-white p-6 rounded-3xl border border-gray-100 shadow-sm hover:shadow-xl hover:border-blue-100 transition-all cursor-pointer relative overflow-hidden flex flex-col h-full"
                     >
                         <div className="absolute top-0 right-0 p-3 opacity-0 group-hover:opacity-100 transition-opacity">
                             <Zap className="w-5 h-5 text-amber-500" />
@@ -74,11 +75,17 @@ const SkillRecommendations: React.FC = () => {
                             </span>
                         </div>
 
-                        <h3 className="text-lg font-black text-gray-800 mb-4 line-clamp-2 leading-tight">
+                        <h3 className="text-lg font-black text-gray-800 mb-2 line-clamp-2 leading-tight">
                             {problem.title}
                         </h3>
 
-                        <div className="flex items-center justify-between mt-auto">
+                        {problem.recommendationReason && (
+                            <p className="text-[10px] font-bold text-gray-400 italic mb-4">
+                                {problem.recommendationReason}
+                            </p>
+                        )}
+
+                        <div className="flex items-center justify-between mt-auto pt-4 border-t border-gray-50">
                             <span className="text-sm font-bold text-gray-400">+{problem.xpReward} XP</span>
                             <Link
                                 to={`/problem/${problem._id}`}

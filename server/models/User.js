@@ -114,6 +114,10 @@ const userSchema = new mongoose.Schema({
     retryCount: { type: Number, default: 1 },
     nextRetryDate: { type: Date }
   }],
+  isOnboarded: {
+    type: Boolean,
+    default: false
+  },
   history: [historySchema]
 }, {
   timestamps: true

@@ -74,39 +74,59 @@ export const getRecommendations = async (req, res, next) => {
     try {
         const user = await User.findById(req.user._id).populate('history.problemId');
 
-        // 1. Find weak categories
-        // (Simplified: just get mastery and sort)
+        // 1. Calculate mastery per category
         const categories = ['Logic', 'Math', 'Computer Science', 'Science'];
-        const interactions = {};
-        categories.forEach(c => interactions[c] = { solved: 0, total: 0 });
+        const stats = {};
+        categories.forEach(c => stats[c] = { solved: 0, total: 0 });
 
         user.history.forEach(item => {
-            if (item.problemId && interactions[item.problemId.category]) {
-                interactions[item.problemId.category].solved += 1;
-                interactions[item.problemId.category].total += 1;
+            if (item.problemId && stats[item.problemId.category]) {
+                stats[item.problemId.category].solved += 1;
+                stats[item.problemId.category].total += 1;
             }
         });
 
-        user.failedAttempts.forEach(item => {
-            // We need category for failed ones too... 
-            // For now let's just use the ones we have in history or fetch them.
+        // Add failed attempts for a better picture
+        const failedProblemIds = user.failedAttempts.map(f => f.problemId);
+        const failedProblems = await Problem.find({ _id: { $in: failedProblemIds } });
+
+        failedProblems.forEach(p => {
+            if (stats[p.category]) {
+                stats[p.category].total += 1;
+            }
         });
 
-        // Sort categories by lowest solved count (or interaction)
-        const sortedCats = Object.keys(interactions).sort((a, b) => interactions[a].solved - interactions[b].solved);
+        // 2. Determine weakest categories
+        const masteryScores = categories.map(cat => {
+            const s = stats[cat];
+            const score = s.total > 0 ? (s.solved / s.total) : 1; // Assume 1 (perfect) for untouched for now, or 0? 
+            // Better: use 0.5 for untouched to encourage exploration but prioritize actual weaknesses.
+            const calculatedScore = s.total > 0 ? (s.solved / s.total) : 0.5;
+            return { category: cat, score: calculatedScore };
+        });
 
-        // 2. Find problems in the weakest category that user hasn't solved
+        // Sort by lowest score
+        const sortedCats = masteryScores.sort((a, b) => a.score - b.score);
+        const weakestCat = sortedCats[0].category;
+
+        // 3. Find problems in the weakest category that user hasn't solved
         const solvedIds = user.history.map(h => h.problemId._id);
 
         const recommendations = await Problem.find({
-            category: sortedCats[0],
+            category: weakestCat,
             _id: { $nin: solvedIds },
             status: 'published'
-        }).limit(3);
+        }).limit(3).lean();
+
+        // 4. Attach reasons
+        const recommendationsWithReasons = recommendations.map(p => ({
+            ...p,
+            recommendationReason: `Based on your performance in ${weakestCat}`
+        }));
 
         res.status(200).json({
             success: true,
-            data: recommendations
+            data: recommendationsWithReasons
         });
     } catch (error) {
         next(error);

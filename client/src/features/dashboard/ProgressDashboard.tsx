@@ -1,4 +1,5 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import { motion } from 'framer-motion';
 import { useProgress } from '../../hooks/useProgress';
 import { LoadingSpinner } from '../../components/ui/LoadingSpinner';
@@ -29,6 +30,7 @@ const StatCard = ({ label, value, icon, color, delay }: any) => (
 );
 
 const ProgressDashboard = () => {
+  const { t } = useTranslation();
   const { progress, loading: progressLoading, error: progressError } = useProgress();
   const [achievements, setAchievements] = React.useState<Achievement[]>([]);
   const [loadingAchievements, setLoadingAchievements] = React.useState(true);
@@ -68,8 +70,8 @@ const ProgressDashboard = () => {
   return (
     <PageTransition className="max-w-6xl mx-auto p-6">
       <div className="mb-10">
-        <h1 className="text-4xl font-black text-gray-900 mb-2">Your Progress</h1>
-        <p className="text-gray-600 text-lg">Keep up the momentum!</p>
+        <h1 className="text-4xl font-black text-gray-900 mb-2">{t('dashboard.title')}</h1>
+        <p className="text-gray-600 text-lg">{t('dashboard.subtitle')}</p>
       </div>
 
       <MistakeBank />
@@ -78,28 +80,28 @@ const ProgressDashboard = () => {
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
         <StatCard
-          label="Total XP"
+          label={t('dashboard.total_xp')}
           value={progress.totalXP}
           icon="⚡"
           color="bg-yellow-100 text-yellow-600"
           delay={0.1}
         />
         <StatCard
-          label="Current Level"
+          label={t('dashboard.current_level')}
           value={progress.level}
           icon="🏆"
           color="bg-purple-100 text-purple-600"
           delay={0.2}
         />
         <StatCard
-          label="Day Streak"
+          label={t('dashboard.day_streak')}
           value={progress.currentStreak}
           icon="🔥"
           color="bg-orange-100 text-orange-600"
           delay={0.3}
         />
         <StatCard
-          label="Problems Solved"
+          label={t('dashboard.problems_solved')}
           value={progress.problemsSolved}
           icon="🧩"
           color="bg-blue-100 text-blue-600"
@@ -116,8 +118,8 @@ const ProgressDashboard = () => {
           className="lg:col-span-2 glass-card p-8 rounded-2xl shadow-sm"
         >
           <div className="flex justify-between items-end mb-6">
-            <h3 className="text-xl font-bold text-gray-900">Weekly Activity</h3>
-            <span className="text-sm text-gray-500 font-medium">Last 7 Days</span>
+            <h3 className="text-xl font-bold text-gray-900">{t('dashboard.weekly_activity')}</h3>
+            <span className="text-sm text-gray-500 font-medium">{t('dashboard.last_7_days')}</span>
           </div>
           <ActivityChart />
         </motion.div>
@@ -132,7 +134,7 @@ const ProgressDashboard = () => {
           <div className="absolute top-0 right-0 p-4 opacity-10 text-6xl">🤖</div>
           <div className="relative z-10">
             <h3 className="text-xl font-black mb-6 flex items-center gap-2">
-              <span className="text-yellow-400">✨</span> AI Coach
+              <span className="text-yellow-400">✨</span> {t('dashboard.ai_coach')}
             </h3>
 
             {loadingAi ? (
@@ -187,8 +189,8 @@ const ProgressDashboard = () => {
       <div className="mt-16 mb-12">
         <div className="flex items-center justify-between mb-8">
           <div>
-            <h2 className="text-3xl font-black text-gray-900 mb-2">Achievements</h2>
-            <p className="text-gray-600 font-medium">Badges you've earned on your journey.</p>
+            <h2 className="text-3xl font-black text-gray-900 mb-2">{t('dashboard.achievements')}</h2>
+            <p className="text-gray-600 font-medium">{t('dashboard.achievements_subtitle')}</p>
           </div>
           <div className="bg-yellow-50 px-4 py-2 rounded-xl text-yellow-700 font-black text-sm border border-yellow-100 flex items-center gap-2">
             <span>🏆</span>

@@ -1,39 +1,46 @@
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo, useEffect, Suspense, lazy } from 'react';
 import { BrowserRouter as Router, Routes, Route, Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from './context/AuthContext';
 import { AnimatePresence } from 'framer-motion';
 import { useTranslation } from 'react-i18next';
 import LanguageSwitcher from './components/ui/LanguageSwitcher';
-import ProgressDashboard from './features/dashboard/ProgressDashboard';
-import InteractiveProblem from './features/problem-solving/InteractiveProblem';
-import ModuleDetail from './features/modules/ModuleDetail';
+import { LoadingSpinner } from './components/ui/LoadingSpinner';
+
+const ProgressDashboard = lazy(() => import('./features/dashboard/ProgressDashboard'));
+const InteractiveProblem = lazy(() => import('./features/problem-solving/InteractiveProblem'));
+const ModuleDetail = lazy(() => import('./features/modules/ModuleDetail'));
+const OnboardingDiagnostic = lazy(() => import('./features/onboarding/OnboardingDiagnostic'));
+
 import { useModules } from './hooks/useModules';
 import { ModuleCard } from './components/ui/ModuleCard';
 import { PageTransition } from './components/ui/PageTransition';
 import { DailyChallengeCard } from './components/ui/DailyChallengeCard';
 import { useDailyChallenge } from './hooks/useDailyChallenge';
 import { useProgress } from './hooks/useProgress';
-import Leaderboard from './pages/Leaderboard';
-import UserProfilePage from './pages/UserProfilePage';
-import AdminDashboard from './pages/AdminDashboard';
-import ProblemList from './pages/admin/ProblemList';
-import ProblemEditor from './pages/admin/ProblemEditor';
-import CourseManager from './pages/admin/CourseManager';
-import { StudyRoom } from './features/community/StudyRoom';
-import Login from './pages/auth/Login';
-import Register from './pages/auth/Register';
-import { XpShop } from './features/shop/XpShop';
-import { SkillForest } from './features/visualization/SkillForest';
-import { LearningDuels } from './features/community/LearningDuels';
-import { DailySprint } from './features/dashboard/DailySprint';
+
+const Leaderboard = lazy(() => import('./pages/Leaderboard'));
+const UserProfilePage = lazy(() => import('./pages/UserProfilePage'));
+const AdminDashboard = lazy(() => import('./pages/AdminDashboard'));
+const ProblemList = lazy(() => import('./pages/admin/ProblemList'));
+const ProblemEditor = lazy(() => import('./pages/admin/ProblemEditor'));
+const CourseManager = lazy(() => import('./pages/admin/CourseManager'));
+const StudyRoom = lazy(() => import('./features/community/StudyRoom').then(m => ({ default: m.StudyRoom })));
+const Login = lazy(() => import('./pages/auth/Login'));
+const Register = lazy(() => import('./pages/auth/Register'));
+const XpShop = lazy(() => import('./features/shop/XpShop').then(m => ({ default: m.XpShop })));
+const SkillForest = lazy(() => import('./features/visualization/SkillForest').then(m => ({ default: m.SkillForest })));
+const LearningDuels = lazy(() => import('./features/community/LearningDuels').then(m => ({ default: m.LearningDuels })));
+const DailySprint = lazy(() => import('./features/dashboard/DailySprint').then(m => ({ default: m.DailySprint })));
+
 import { LearningTrackCard } from './components/ui/LearningTrackCard';
 import { apiService } from './services/api.service';
 import { KnowledgeMap } from './features/visualization/KnowledgeMap';
-import TeacherDashboard from './features/dashboard/TeacherDashboard';
-import CreatorDashboard from './features/dashboard/CreatorDashboard';
-import MyClassrooms from './features/dashboard/MyClassrooms';
-import ClassroomStats from './features/dashboard/ClassroomStats';
-import CommunityHub from './pages/CommunityHub';
+
+const TeacherDashboard = lazy(() => import('./features/dashboard/TeacherDashboard'));
+const CreatorDashboard = lazy(() => import('./features/dashboard/CreatorDashboard'));
+const MyClassrooms = lazy(() => import('./features/dashboard/MyClassrooms'));
+const ClassroomStats = lazy(() => import('./features/dashboard/ClassroomStats'));
+const CommunityHub = lazy(() => import('./pages/CommunityHub'));
 
 const Home = () => {
   const { t } = useTranslation();
@@ -310,35 +317,57 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
   );
 };
 
-const AnimatedRoutes = () => {
+const OnboardingGuard = ({ children }: { children: React.ReactNode }) => {
+  const { user, loading } = useAuth();
   const location = useLocation();
 
+  if (loading) return <LoadingSpinner />;
+  if (user && !user.isOnboarded && location.pathname !== '/onboarding') {
+    return <Link to="/onboarding" style={{ display: 'none' }} id="onboarding-redirect" />;
+  }
+  return <>{children}</>;
+};
+
+const AnimatedRoutes = () => {
+  const location = useLocation();
+  const navigate = useNavigate();
+  const { user } = useAuth();
+
+  useEffect(() => {
+    if (user && !user.isOnboarded && location.pathname !== '/onboarding') {
+      navigate('/onboarding');
+    }
+  }, [user, location, navigate]);
+
   return (
-    <AnimatePresence mode="wait">
-      <Routes location={location} key={location.pathname}>
-        <Route path="/" element={<Home />} />
-        <Route path="/dashboard" element={<ProgressDashboard />} />
-        <Route path="/module/:moduleId" element={<ModuleDetail />} />
-        <Route path="/problem/:problemId" element={<InteractiveProblem />} />
-        <Route path="/leaderboard" element={<Leaderboard />} />
-        <Route path="/profile/:userId" element={<UserProfilePage />} />
-        <Route path="/admin" element={<AdminDashboard />} />
-        <Route path="/admin/problems" element={<ProblemList />} />
-        <Route path="/admin/problems/new" element={<ProblemEditor />} />
-        <Route path="/admin/problems/edit/:id" element={<ProblemEditor />} />
-        <Route path="/admin/courses" element={<CourseManager />} />
-        <Route path="/study-room/:roomId" element={<StudyRoom />} />
-        <Route path="/duels" element={<LearningDuels />} />
-        <Route path="/shop" element={<XpShop />} />
-        <Route path="/teacher-dashboard" element={<TeacherDashboard />} />
-        <Route path="/classroom/:id/stats" element={<ClassroomStats />} />
-        <Route path="/creator-dashboard" element={<CreatorDashboard />} />
-        <Route path="/my-classrooms" element={<MyClassrooms />} />
-        <Route path="/community" element={<CommunityHub />} />
-        <Route path="/login" element={<Login />} />
-        <Route path="/register" element={<Register />} />
-      </Routes>
-    </AnimatePresence>
+    <Suspense fallback={<LoadingSpinner />}>
+      <AnimatePresence mode="wait">
+        <Routes location={location} key={location.pathname}>
+          <Route path="/" element={<Home />} />
+          <Route path="/dashboard" element={<ProgressDashboard />} />
+          <Route path="/module/:moduleId" element={<ModuleDetail />} />
+          <Route path="/problem/:problemId" element={<InteractiveProblem />} />
+          <Route path="/leaderboard" element={<Leaderboard />} />
+          <Route path="/profile/:userId" element={<UserProfilePage />} />
+          <Route path="/admin" element={<AdminDashboard />} />
+          <Route path="/admin/problems" element={<ProblemList />} />
+          <Route path="/admin/problems/new" element={<ProblemEditor />} />
+          <Route path="/admin/problems/edit/:id" element={<ProblemEditor />} />
+          <Route path="/admin/courses" element={<CourseManager />} />
+          <Route path="/study-room/:roomId" element={<StudyRoom />} />
+          <Route path="/duels" element={<LearningDuels />} />
+          <Route path="/shop" element={<XpShop />} />
+          <Route path="/teacher-dashboard" element={<TeacherDashboard />} />
+          <Route path="/classroom/:id/stats" element={<ClassroomStats />} />
+          <Route path="/creator-dashboard" element={<CreatorDashboard />} />
+          <Route path="/my-classrooms" element={<MyClassrooms />} />
+          <Route path="/community" element={<CommunityHub />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/register" element={<Register />} />
+          <Route path="/onboarding" element={<OnboardingDiagnostic />} />
+        </Routes>
+      </AnimatePresence>
+    </Suspense>
   );
 };
 

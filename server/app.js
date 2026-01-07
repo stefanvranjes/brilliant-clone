@@ -17,6 +17,7 @@ import clanRoutes from './routes/clanRoutes.js';
 import eventRoutes from './routes/eventRoutes.js';
 import activityRoutes from './routes/activityRoutes.js';
 import analyticsRoutes from './routes/analyticsRoutes.js';
+import onboardingRoutes from './routes/onboardingRoutes.js';
 import { errorHandler } from './middleware/errorHandler.js';
 
 const app = express();
@@ -43,6 +44,7 @@ app.use('/api/comments', commentRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/ai', aiRoutes);
 app.use('/api/analytics', analyticsRoutes);
+app.use('/api/onboarding', onboardingRoutes);
 
 // Health Check & Root
 app.get('/', (req, res) => {
